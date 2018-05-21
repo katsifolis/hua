@@ -1,0 +1,29 @@
+html {
+	font-size: 16px;
+}
+
+body {
+	background-color: rgb(37, 39, 41);
+	background-image: url(assets/war.jpg);
+	background-size: cover;
+	color: white;
+	font-size: 24px;
+	text-align: center;
+}
+
+
+pre {
+	text-align: center;
+}
+
+img {
+	float: center;
+}
+
+.main {
+	height: auto;
+	width: auto;
+	margin: 1em;
+	font-size: 20px;
+	text-align: center;
+}
