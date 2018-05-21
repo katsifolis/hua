@@ -21,6 +21,37 @@
 			<option value="Horror">
 		</datalist>
 		<br /> <br />
-		<button name="button">Search</button>
+		<button id="ajaxCall" type="button">Search</button> <!-- This is a fucking comment -->
+		<script>
+			(function() {
+				var httpRequest;
+				document.getElementById("ajaxCall").addEventListener('click', makeRequest);
+
+				function makeRequest() {
+					httpRequest = new XMLHttpRequest();
+
+					if(!httpRequest) {
+						alert('Giving up');
+						return false;
+					}
+					httpRequest.onreadystatechange = alertContents;
+					httpRequest.open('GET', 'index.html');
+					httpRequest.send();
+				}
+
+				function alertContents() {
+					if (httpRequest.readyState === XMLHttpRequest.DONE) {
+						if (httpRequest.status === 200) {
+							alert(httpRequest.responseText);
+							} else {
+								alert('there was a problem');
+							}
+					}
+				}
+			})();
+
+
+
+		</script>
 	</body>
 </html>
