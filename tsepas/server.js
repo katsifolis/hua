@@ -2,8 +2,17 @@
 
 var express = require('express');
 var app = express();
-var serveStatic = require('serve-static');
+var mysql = require('mysql');
 
-app.use(serveStatic('./', {'index': ['index.html', 'default.htm']}))
+app.use(express.static('./'));
 
-app.listen(8081);
+app.post('/books/', function(req, res){
+	res.send('books');
+	
+});
+
+
+app.listen(8081, () => console.log('Listening on port 8081'));
+
+
+

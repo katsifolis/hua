@@ -2,6 +2,16 @@ html {
 	font-size: 16px;
 }
 
+.btn {
+	float: center;
+}
+
+.txtbox {
+	width: 150px;
+	height: 20px;
+	float: center;
+}
+
 body {
 	background-color: rgb(37, 39, 41);
 	background-image: url(assets/war.jpg);

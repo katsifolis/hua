@@ -5,23 +5,40 @@
 		<link rel='stylesheet' href='style.css'>
 	</head>
 	<body>
-		<h2>This a very simple Text Book Repo</h2>
-		<p>To search for a specific book, submit the form ahead!</p>
-		<label>Author <input id="Book" type="text"></label>
-		<label>Title <input id="Title" type="text"></label>
-		<label>Price <input id="Price" type="text"></label>
-		<label>Genre <input list="genre"></label>
-		<datalist id="genre">
-			<option value="Science Fiction">
-			<option value="Satire">
-			<option value="Drama">
-			<option value="Action & Adventure">
-			<option value="Romance">
-			<option value="Mystery">
-			<option value="Horror">
-		</datalist>
-		<br /> <br />
-		<button id="ajaxCall" type="button">Search</button> <!-- This is a fucking comment -->
+		<h2>This Is A Very Simple Text Book Repo</h2>
+		<form method="get" id="forma">
+			<p>To register a book, submit the form ahead!</p>
+			<label>Author <input id="author" type="text" placeholder="J. R. R. Tolkien"></label>
+			<label>Title <input id="title" type="text" placeholder="The Lord Of The Rings"></label>
+			<label>Price <input id="price" type="text" placeholder="25$"></label>
+			<label>Genre <input list="genre" placeholder="Fantasy"></label>
+			<datalist id="genre">
+				<option value="Science Fiction">
+				<option value="Satire">
+				<option value="Drama">
+				<option value="Action & Adventure">
+				<option value="Romance">
+				<option value="Mystery">
+				<option value="Horror">
+			</datalist>
+			<br /> <br />
+			<button id="ajaxCall" type="button" class="btn">Sumbit</button> <!-- This is a fucking comment -->
+			<br /> 
+		</form>
+		<form>
+			<div>
+				<label for="searchBox">To search for a specific book fill the text box</label>	
+				<br />
+				<input type="text" id="searchBox" name="val" class="txtbox" placeholder="Lower case">
+				<br />
+			</div>
+			<div>
+				<button id='but' class="btn">Search</button>
+				<br />
+			</div>
+		</form>
+		<button type="submit" form="forma" value="Submit">Submit</button>
+
 		<script>
 			(function() {
 				var httpRequest;
@@ -49,9 +66,7 @@
 					}
 				}
 			})();
-
-
-
 		</script>
+		<script src="test.js"></script>
 	</body>
 </html>
