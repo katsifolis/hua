@@ -1,8 +1,9 @@
 'use strict';
+
 var book = {
-	author: "",
-	title: "",
-	genre: "",
+	author: "Tolkien",
+	title: "Lord of the rings",
+	genre: "fantasy",
 	price: 20
 
 }
@@ -14,30 +15,45 @@ function Book(author, title, genre, price) {
 	this.price = price;
 
 }
+var httpRequest;
 
-var tAuthor = document.getElementById('author').value;
-var tTitle = document.getElementById('title').value;
-var tGenre = document.getElementById('genre').value;
-var tPrice = document.getElementById('price').value;
+document.getElementById('ajaxCall').addEventListener('click', makeRequest);
 
-var b = new Book(tAuthor, tTitle, tGenre, tPrice);
+//document.getElementById('ajaxCall').onclick = function() {
+//};
 
+function makeRequest() {
 
-document.getElementById('but').addEventListener('click', () => alert(JSON.stringify(b)));
+	var tAuthor = document.getElementById('author').value;
+	var tTitle = document.getElementById('title').value;
+	var tGenre = document.getElementById('genre').value;
+	var tPrice = document.getElementById('price').value;
+	
+	var b = new Book(tAuthor, tTitle, tGenre, tPrice);
+	console.log(JSON.stringify(b));
 
-//document.getElementById('author')
-//function ask(question, yes, no) {
-//  confirm(question)
-//	 ? yes() : no()
-//  
-//}
-//
-//ask(
-//  "Do you agree?",
-//  () => alert('You agreed'),
-//  () => alert('You agreedn\'t')
-//);
+	httpRequest = new XMLHttpRequest();
 
+	if(!httpRequest) {
+		alert('Failed');
+	}
+
+	httpRequest.onreadystatechange = alertContents;
+	httpRequest.open('GET', 'index.html', true);
+	httpRequest.send();
+
+	function alertContents() {
+		if (httpRequest.readyState === XMLHttpRequest.Done) {
+			if (httpRequest.status === 200) {
+				var response = httpRequest.responseText;
+				alert(response);
+				} else {
+					alert('There was a problem');
+				}
+		}
+
+	}
+}
 
 let user = {
 	name: "John",
