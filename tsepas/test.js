@@ -37,9 +37,9 @@ function makeRequest() {
 	var a = 2;
 
 	httpRequest.onreadystatechange = alertContents;
-	httpRequest.open('POST', '/books/');
-	httpRequest.setRequestHeader('Content-Type', 'x-www-form-urlencoded');
-	httpRequest.send('Just text'+a);
+	httpRequest.open('POST', '/books');
+	httpRequest.setRequestHeader('Content-Type', 'text/plain');
+	httpRequest.send();
 
 	function alertContents() {
 		if (httpRequest.readyState === XMLHttpRequest.DONE) {
