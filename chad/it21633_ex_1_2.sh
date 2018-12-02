@@ -1,6 +1,10 @@
-#!/usr/bin/bash
-
 # Lists files within a dir with zero file size and their empty subdirs
+
+if [ -z $1 ];
+then
+	echo No file provided
+	exit
+fi
 
 dir=$1
 
@@ -24,7 +28,7 @@ if [ -d "$dir" ]; then
 	echo -e "\n-- Empty Directories --"
 
 	# Printing the empty folders
-	find -type d -empty -exec basename {} \; | sed 's/regexp/\n/g'
+	find -type d -empty | sed 's/regexp/\n/g'
 else
 	echo Given file is not a directory!
 	exit

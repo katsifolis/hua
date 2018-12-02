@@ -1,4 +1,3 @@
-#!/usr/bin/bash
 
 # Lists the contents of the home folder which are over 100M in descending order
 
