@@ -1,9 +1,19 @@
 # Deletes a record from the db with date as identifier
 
+IFS='\n'
+
 read -p "Specify the date & time of the file you wish to delete: " val
 
-if [[ $val == $(cat "./events.csv" | grep $val |  cut -d"," -f1) ]];
-then
-	cat "./events.csv" | grep $val | sed s//\ /g
-fi
+mapfile -t lines < "./events.csv"
 
+for i in ${lines[@]};
+do
+	echo $i
+	if [[ $val == $(echo $i | cut -d"," -f1) ]];
+	then
+		sed -i /$val/d "events.csv"
+		echo Found and Deleted
+	else
+		echo Not Found
+	fi
+done

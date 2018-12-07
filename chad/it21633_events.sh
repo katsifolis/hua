@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
 # A personal scheduler
 
-SCR="/home/it21633/hua/chad/"
-
+SCR="$HOME/hua/chad/"
 cols=$(stty size | cut -d" " -f2)
 welcome="Welcome to Your Personal Agenda"
 mid=$(($cols / 2))
