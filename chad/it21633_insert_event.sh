@@ -17,4 +17,4 @@ read -p "Please provide the date: " event_date
 
 read -p "Please provide some optional text: " event_opt
 
-echo -en "$event_date, $event_name, $event_opt" >> events.cv
+echo -en "$event_date, $event_name, $event_opt" >> events.csv

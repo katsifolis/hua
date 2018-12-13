@@ -50,9 +50,11 @@ selection () {
 			7)
 				echo "Have a nice day";;
 			*)
-				echo "Make a valid selection";;
+				echo "Make a valid selection"
+				
 
 		esac
+	p_menu
 	read -p 'Make your Selection: ' answer
 	done
 	echo -n "Have a nice day"
