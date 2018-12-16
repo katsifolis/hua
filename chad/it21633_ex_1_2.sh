@@ -16,12 +16,13 @@ if [ -d "$dir" ]; then
 	# Separating the regular files from directories
 	for i in $flnms; 
 	do
-		if [ -f "$i" ]; 
+		if [[ -f "$i" ]]; 
 		then 
-			flnm=`cat "$i"`
-			if [ "$flnm" == "" ];
+			# trim the null byte
+			flnm=$(cat $i | tr -d "\0")
+			if [[ -z $flnm ]];
 			then
-				echo "$i"
+				echo "$i" 
 			fi
 		fi
 	done

@@ -1,6 +1,6 @@
-quota=5000000
+# Calculates the percentage o the quota
+quota=5000000 # In kb
 size=$(du -s ~/ 2>/dev/null | cut -f1)
-size1=2700
 
 res=$(bc -l <<< "$size / $quota")
 
