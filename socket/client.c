@@ -1,48 +1,98 @@
-#include <unistd.h>
-#include <sys/types.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <string.h>
+#include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <netdb.h>
 #include <arpa/inet.h>
+#include <signal.h>
 
-#define PORT 21633
-int main()
+#define BUFFER_SIZE 2048
+
+void
+error(const char *msg)
 {
-	struct sockaddr_in address;
-	int sock, valread = 0;
-	struct sockaddr_in serv_addr;
-	char *hello = "Hello from Client";
-	char buffer[1024] = {0};
-	if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) { 
-		printf("\n Socket creation error \n"); 
-		return -1; 
-	} 
+	perror(msg);
+	exit(0);
+}
+
+void 
+signalhandler(int signum) 
+{ 
+	printf("\nCaught signal %d \n",signum);
+	exit(signum);
+}
+
+
+int 
+main(int argc, char *argv[])
+{
+	int clientSocket,result,portno;
+	struct sockaddr_in serverAddr;
+	char buffer[BUFFER_SIZE];
+	int readbytes;
+
+	signal(SIGINT,signalhandler); 
 	
-	memset(&serv_addr, '0', sizeof(serv_addr)); 
+	if (argc < 3)
+	{
+		fprintf(stderr, "usage %s ip-address port\n", argv[0]);
+		exit(0);
+	}
 
-	serv_addr.sin_family = AF_INET; 
-	serv_addr.sin_port = htons(PORT); 
+	portno = atoi(argv[2]);
+	
+	
+	clientSocket = socket(AF_INET, SOCK_STREAM, 0);
+	if (clientSocket < 0) {
+		error("ERROR opening socket");
+	}
+	printf("Client socket is created.\n");
+	
 
-	// Convert IPv4 and IPv6 addresses from text to binary form 
-	if(inet_pton(AF_INET, "127.0.0.1", &serv_addr.sin_addr)<=0)  { 
+//	bzero((char *) &serverAddr, sizeof(serverAddr));
+	memset(&serverAddr, '\0', sizeof(serverAddr));
+	serverAddr.sin_family = AF_INET;
+	serverAddr.sin_addr.s_addr=inet_addr(argv[1]);
+	serverAddr.sin_port = htons(portno);
 
-		printf("\nInvalid address/ Address not supported \n"); 
-		return -1; 
-	} 
+	result = connect(clientSocket, (struct sockaddr *) &serverAddr, sizeof(serverAddr));
+	if (result < 0) {
+		error("ERROR connecting");
+	}
 
-	if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr))<0) {
-		printf("\nConnection Failed \n"); 
-		return -1; 
-	} 
+	printf("Connected to server with ip address: \n");
+	
 
-	send(sock , hello , strlen(hello) , 0 ); 
-	printf("Hello message sent\n"); 
-	valread = read(sock , buffer, 1024); 
-	read(sock, buffer, 1024);
-	printf("%s\n",buffer ); 
+	while (1) { 
+		printf("%s:>",argv[1]);
+		/*retarded
+		printf("Please enter a command: ");
+		*/
+		memset(buffer, '\0', BUFFER_SIZE);
+		fgets(buffer, BUFFER_SIZE - 1, stdin); 
+		send(clientSocket,buffer,strlen(buffer),0);
+
+		if (strcmp(buffer, "quit\n") == 0 ) { 
+		  close(clientSocket);
+		  printf("Disconnected from server %s \n",argv[1]);
+		  break;
+		}
+
+	
+		readbytes=recv(clientSocket,buffer,7000,0);
+		if (readbytes < 0) {
+			printf("Error in receiving message \n");
+		} else if (readbytes==-1) {
+			close(clientSocket);
+			printf("Disconnected from server \n");
+			break;
+		} else {
+			buffer[readbytes-1]='\0'; 
+			printf("Server: \n%s\n", buffer);
+		}
+	}
 	return 0;
-
-
 }
