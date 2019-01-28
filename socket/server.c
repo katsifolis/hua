@@ -11,7 +11,8 @@
 #include <ctype.h>
 
 #define BUFFER_SIZE 2048
-#define QUIT -1 
+#define QUIT 127
+#define NOTCHANGED
 
 void 
 error(const char *msg)
@@ -186,18 +187,19 @@ main(int argc, char *argv[])
 				printf("Client %s please enter a command\n",str);
 		
 				bzero(buffer, BUFFER_SIZE);
-				n = read(newsockfd, buffer, BUFFER_SIZE - 1);
-				if (n < 0) {
-				error("ERROR reading from socket");
+				n = recv(newsockfd, buffer, BUFFER_SIZE - 1, 0);
+				printf("%d", n);
+				if (n <= 0) {
+					error("ERROR reading from socket");
 				}
 			
-			int pid=fork();
-			if(pid==-1) {
-				perror("fork");
-				exit(1);
+				int pid=fork();
+				if(pid==-1) {
+					perror("fork");
+					exit(1);
 				}
-			if(pid!=0) { 
-				if(wait(&status)==-1) {
+				if(pid!=0) { 
+					if(wait(&status)==-1) {
 						perror("wait");
 						check_child_exit(QUIT);
 					}
@@ -207,7 +209,7 @@ main(int argc, char *argv[])
 				}
 
 			} else {  
-				   if(strcmp(buffer, "quit\n") == 0 ) {
+				   if(strcmp(buffer, "quit\n") == 0 || n < 0 ) {
 					  fprintf(stdout,"Disconnected from client %s\n",str);
 					  close(sockfd);
 					  exit(QUIT);
