@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+
+{% block div %}
+
+{% if username %}
+	<p>Hey {{username}} !</p>
+{% endif %}
+{% if msg %}
+<p>{{msg}}</p>
+{% else %}
+<p>Welcome to the admin system of the Erasmus platform.</p>
+<p>
+You can move over to the about page
+to read about erasmus.
+</p>
+{% endif %}
+
+{% endblock %}

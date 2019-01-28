@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block div %}
+<h1>Fill the Form</h1>
+
+<form method="POST" action="/create_request/">
+  <p> {{ msg }} </p>
+  <p>University of interest 1</p>
+  <input type="text" name="uni1"></input>
+  <p>University of interest 2</p>
+  <input type="text" name="uni2"></input><br />
+  <p>University of interest 3</p>
+  <input type="text" name="uni3"></input><br />
+  <button type="submit" value="log in">Submit</button>
+</form>
+
+{% endblock %}

@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block div %}
+
+<form method="POST" action="/login/">
+  <p> {{ msg }} </p>
+  <p>Username</p>
+  <input type="text" name="username"></input>
+  <p>Password</p>
+  <input type="password" name="password" id="password"></input><br />
+  <input type="checkbox" class="checkbox" onClick="toggleVisibility()">
+  <button type="submit" value="log in">Log In</button>
+  {% if invalid %}
+	  <p>Not a valid username</p>
+  {% endif %}
+</form>
+
+<script>
+	function toggleVisibility() {
+		var x = document.getElementById('password')
+		if (x.type === "password") {
+			x.type = "text";
+		} else {
+			x.type = "password";
+		}
+	}
+</script>
+{% endblock %}
