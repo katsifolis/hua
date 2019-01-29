@@ -1,0 +1,102 @@
+* {
+  box-sizing: border-box;
+  text-align: center;
+  font-size: 20px;
+	background-color: #ffffff;
+  color: #000000;
+  margin-top: 10px;
+}
+
+
+a {
+  background-color: transparent;
+  color: #000;
+  text-decoration: none;
+}
+a:focus, a:hover {
+  color: #8fc;
+  text-decoration: underline;
+}
+
+p, h1 {
+  color: #000;
+	max-width: 800px;
+	margin-right: auto;
+	margin-left: auto;
+	text-align: center;
+}
+
+.checkbox {
+  zoom: 1.5%;
+}
+
+input, button {
+  color: #000000;
+  display: block;
+  background-color: #ffffff;
+  margin-right: auto;
+  margin-left: auto;
+  border-radius: 9999rem;
+  outline: none;
+}
+
+input:hover, button:hover {
+  box-shadow: 50px #ffffff
+}
+
+.logout {
+  float: right !important;
+  
+}
+
+.nav {
+  padding-left: 0;
+  margin-bottom: 0;
+  list-style: outside none none;
+	background-image: url('erasmus.jpg');
+	background-repeat: no-repeat;
+	background-position: center center;
+	background-size: 10rem;
+}
+.nav::after {
+  display: table;
+  content: " ";
+  clear: both;
+}
+.nav > li {
+  position: relative;
+  display: block;
+}
+.nav > li > a {
+  position: relative;
+  display: block;
+  padding: 10px 15px;
+  border-bottom: 1px solid #333;
+}
+.nav > li > a:focus, .nav > li > a:hover {
+  text-decoration: none;
+  background-color: #bbb;
+  border-bottom: 1px solid #8fc;
+}
+.nav-tabs {
+  border-bottom: 1px solid #333;
+}
+.nav-tabs > li {
+  float: left;
+  margin-bottom: -1px;
+}
+.nav-tabs > li > a {
+  margin-right: 2px;
+  line-height: 1.42857;
+}
+.nav-tabs > li.active > a {
+  cursor: default;
+  border-bottom: 1px solid #8dc;
+}
+
+.container {
+  padding-right: 30px;
+  padding-left: 30px;
+  margin-right: auto;
+  margin-left: auto;
+}

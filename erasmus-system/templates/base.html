@@ -1,0 +1,42 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <title>Erasmus-System</title>
+    <link rel="shortcut icon" href={{ url_for('static', filename='favicon.ico') }}>
+  </head>
+  <body>
+    <div class="container">
+      <ul class="nav nav-tabs">
+        {% if type_of_user == "admin" %}
+					<li class=""><a href="{{ url_for('admin') }}">Database Management</a></li>
+				{% else %}
+					<li class=""><a href="{{ url_for('home') }}">Home</a></li>
+					<li class=""><a href="{{ url_for('about') }}">About</a></li>
+					{% if not logged %}
+					<li class=""><a href="{{ url_for('login') }}">Login</a></li>
+					<li class=""><a href="{{ url_for('manage') }}">Manage</a></li>
+					{% endif %}
+					{% if type_of_user == "student" %}
+					<li class=""><a href="{{ url_for('create_request') }}">Create Request</a></li>
+					{% endif %}
+					{% if type_of_user == "secretary" %}
+					<li class=""><a href="{{ url_for('update_available_unis') }}">Update Available Unis</a></li>
+					{% endif %}
+			{% endif %}
+			<li class="logout"><a href="{{ url_for('logout') }}">Logout</a></li>
+      </ul>  
+    </div>
+		<br />
+    <div class="main">
+      {% block div %}
+      
+      {% endblock %}
+    </div>
+
+
+  </body>
+
+

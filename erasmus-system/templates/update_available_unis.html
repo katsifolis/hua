@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+
+
+{% block div %}
+
+<form method="POST" action="/update_available_unis/">
+  <p> {{ msg }} </p>
+  <p>Associated University</p>
+  <input type="text" name="name"></input>
+  <p>Acceptances</p>
+  <input type="text" name="acceptances"></input><br />
+  <p>Suggested Language</p>
+  <input type="text" name="language"></input><br />
+  <button type="submit" value="Push">Push</button>
+  {% if invalid %}
+	  <p>Not a valid username</p>
+  {% endif %}
+</form>
+
+
+
+
+{% endblock %}
