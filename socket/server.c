@@ -30,6 +30,7 @@ void
 signalhandler(int signum)
 { 
 	printf("\nCaught signal %d \n",signum);
+	close(sockfd);
 	exit(signum);
 }
 
@@ -111,8 +112,6 @@ runpipe(int pfd[],int socket,char *typedcommand)
 			perror("fork");
 			exit(1);
 	}
-
-
 }
 
 int 
@@ -163,8 +162,6 @@ main(int argc, char *argv[])
 	printf("Listening for connections..\n");
 
 	while (1) {
-
-
 		/* Wait for incoming connections in a loop */
 
 		clilen = sizeof(cli_addr);
@@ -209,7 +206,7 @@ main(int argc, char *argv[])
 
 					if(WEXITSTATUS(status)==QUIT) { 
 							break;
-				}
+					}
 
 			} else {  
 				   if(strcmp(buffer, "quit\n") == 0 || n < 0 ) {

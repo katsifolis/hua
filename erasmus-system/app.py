@@ -176,21 +176,38 @@ def check_eligibility(username, universities):
 def home(logged = None, type_of_user = None):
     return render_template('home.html', logged = cache.get('logged'), type_of_user = cache.get('type_of_user'))
 
-
 @app.route('/admin/', methods=['GET', 'POST'])
-def admin(logged = None, type_of_user = None):
+def admin(logged = None, type_of_user = None, msg = None):
     if request.method == 'POST':
-
         try:
-            print(request.form['insert'])
+            username = request.form['delete']
+            c.execute("delete from users where username='%s'" % username)
+            conn.commit()
         except:
+            print("error in deleting '%s'" % username)
+        finally:
+            msg = "The user '%s' has been deleted successfully" % username
+            return render_template('admin.html', logged = cache.get('logged'), type_of_user = cache.get('type_of_user'), msg = msg)
 
-            print('error')
-
-        return 'taskte'
-        
     else:
         return render_template('admin.html', logged = cache.get('logged'), type_of_user = cache.get('type_of_user'))
+
+@app.route('/admin_user_insert/', methods=['GET', 'POST'])
+def admin_user_insert(logged = None, type_of_user = None, msg = None):
+    if request.method == 'POST':
+        try:
+            username = request.form['username']
+            password = request.form['password']
+            c.execute("insert into users values('%s', '%s', null, null, null, null, null, null, 'student')" % (username, password))
+            conn.commit()
+        except:
+            print("error in creating '%s'" % username)
+        finally:
+            msg = "The user '%s' has been created successfully" % username
+            return render_template('admin_user_insert.html', logged = cache.get('logged'), type_of_user = cache.get('type_of_user'), msg = msg)
+
+    else:
+        return render_template('admin_user_insert.html', logged = cache.get('logged'), type_of_user = cache.get('type_of_user'))
 
 
 @app.route('/about/')
@@ -292,14 +309,6 @@ def login(username=None, password=None, query=None, msg=None, logged = None, typ
             return render_template('login.html', msg=msg)
         else:
             return render_template('login.html') 
-
-@app.route('/manage/')
-def manage(logged = None):
-    if cache.get('logged'):
-        return render_template('manage.html', logged = cache.get('logged'))
-    else:
-        msg = "You are not logged in"
-        return render_template('login.html', msg=msg)
 
 if __name__ == '__main__':
     app.run(debug=True)

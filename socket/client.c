@@ -2,25 +2,27 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+#include <time.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h>
 #include <arpa/inet.h>
 #include <signal.h>
+#include <errno.h>
 
 #define BUFFER_SIZE 2048
 
-/* COLORS */
+/* Macros */
+#define COLOR_RESET	printf("\033[0m")
 #define printb(...)	printf("\033[32m" __VA_ARGS__)
 #define printr(...)	printf("\033[31m" __VA_ARGS__)
 #define printm(...)	printf("\033[36m" __VA_ARGS__)
-#define COLOR_RESET	printf("\033[0m")
 
 void
 error(const char *msg)
 {
-	perror(msg);
+	fprintf(stderr, msg);
 	exit(0);
 }
 
@@ -31,11 +33,11 @@ signalhandler(int signum)
 	exit(signum);
 }
 
-
 int 
 main(int argc, char *argv[])
 {
 	/* Initializations */
+	srand(time(NULL));
 	int clientSocket,result,portno;
 	struct sockaddr_in serverAddr;
 	char buffer[BUFFER_SIZE];
@@ -56,7 +58,8 @@ main(int argc, char *argv[])
 	if (clientSocket < 0) {
 		error("ERROR opening socket");
 	}
-	printf("Client socket is created.\n");
+	printb("Client socket is created.\n");
+	COLOR_RESET;
 	
 
 	memset(&serverAddr, '\0', sizeof(serverAddr));
@@ -69,35 +72,36 @@ main(int argc, char *argv[])
 		error("ERROR connecting");
 	}
 
-	printm("Connected to server with ip address: \n");
+	printb("Connected to server with ip address: \n");
 	COLOR_RESET;
 	
 
 	while (1) { 
-		printr("%s:>",argv[1]);
+		int flag;
+		printm("%s:>",argv[1]);
 		COLOR_RESET;
 		memset(buffer, '\0', BUFFER_SIZE);
 		fgets(buffer, BUFFER_SIZE - 1, stdin); 
-		send(clientSocket, buffer, strlen(buffer), 0);
-
-		if (strcmp(buffer, "quit\n") == 0) { 
+		flag = write(clientSocket, buffer, strlen(buffer));
+		//send(clientSocket, buffer, strlen(buffer), MSG_NOSIGNAL);
+		printf("%d\n", flag);
+		printf("%d\n", errno);
+		if (strcmp(buffer, "END\n") == 0) {
 			close(clientSocket);
 			printf("Disconnected from server %s \n",argv[1]);
 			break;
-		} else if (strcmp(buffer, "\n") == 0) { /* ignoring the \r */
-			continue;
 		}
-
-		readbytes=recv(clientSocket,buffer,7000,0);
-		if (readbytes < 0) {
-			printf("Error in receiving message \n");
-		} else if (readbytes==-1) {
+	   	if (strcmp(buffer, "\n") == 0) continue;
+	   	
+		readbytes = recv(clientSocket, buffer, 7000, 0);
+		if (readbytes == 0) {
 			close(clientSocket);
-			printf("Disconnected from server \n");
+			error("Server Shutdown\n");
 			break;
 		} else {
 			buffer[readbytes-1]='\0'; 
-			printf("Server:\n%s\n", buffer);
+			printr("Server:\n%s\n", buffer);
+			COLOR_RESET;
 		}
 	}
 	return 0;

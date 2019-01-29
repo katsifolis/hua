@@ -7,12 +7,12 @@
   <p>Username of user to be deleted</p>
   <input type="text" name="delete"></input>
   <button type="submit" value="delete">Delete</button>
-  <p>Username of user to be added</p>
-  <input type="text" name="insert"></input>
-  <button type="submit" value="insert">Insert</button>
-  {% if invalid %}
-	  <p>Not a valid username</p>
+
+  {% if msg %}
+  	<p>
   {% endif %}
 </form>
+
+
 
 {% endblock %}

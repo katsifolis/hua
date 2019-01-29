@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+
+
+{% block div %}
+
+<form method="POST" action="/admin_user_insert/">
+  <h1> Fill the form to add a user to the db </h1>
+  <p>Username</p>
+  <input type="text" name="username"></input>
+  <p>Password</p>
+  <input type="password" name="password"></input>
+  <button type="submit" value="create">Create</button>
+</form>
+{% if msg %}
+	<p>{{msg}}</p>
+{% endif %}
+
+
+{% endblock %}
