@@ -11,6 +11,12 @@
 
 #define BUFFER_SIZE 2048
 
+/* COLORS */
+#define printb(...)	printf("\033[32m" __VA_ARGS__)
+#define printr(...)	printf("\033[31m" __VA_ARGS__)
+#define printm(...)	printf("\033[36m" __VA_ARGS__)
+#define COLOR_RESET	printf("\033[0m")
+
 void
 error(const char *msg)
 {
@@ -29,6 +35,7 @@ signalhandler(int signum)
 int 
 main(int argc, char *argv[])
 {
+	/* Initializations */
 	int clientSocket,result,portno;
 	struct sockaddr_in serverAddr;
 	char buffer[BUFFER_SIZE];
@@ -36,6 +43,7 @@ main(int argc, char *argv[])
 
 	signal(SIGINT,signalhandler); 
 	
+	/* Guard */
 	if (argc < 3)
 	{
 		fprintf(stderr, "usage %s ip-address port\n", argv[0]);
@@ -44,7 +52,6 @@ main(int argc, char *argv[])
 
 	portno = atoi(argv[2]);
 	
-	
 	clientSocket = socket(AF_INET, SOCK_STREAM, 0);
 	if (clientSocket < 0) {
 		error("ERROR opening socket");
@@ -52,7 +59,6 @@ main(int argc, char *argv[])
 	printf("Client socket is created.\n");
 	
 
-//	bzero((char *) &serverAddr, sizeof(serverAddr));
 	memset(&serverAddr, '\0', sizeof(serverAddr));
 	serverAddr.sin_family = AF_INET;
 	serverAddr.sin_addr.s_addr=inet_addr(argv[1]);
@@ -63,25 +69,25 @@ main(int argc, char *argv[])
 		error("ERROR connecting");
 	}
 
-	printf("Connected to server with ip address: \n");
+	printm("Connected to server with ip address: \n");
+	COLOR_RESET;
 	
 
 	while (1) { 
-		printf("%s:>",argv[1]);
-		/*retarded
-		printf("Please enter a command: ");
-		*/
+		printr("%s:>",argv[1]);
+		COLOR_RESET;
 		memset(buffer, '\0', BUFFER_SIZE);
 		fgets(buffer, BUFFER_SIZE - 1, stdin); 
-		send(clientSocket,buffer,strlen(buffer),0);
+		send(clientSocket, buffer, strlen(buffer), 0);
 
-		if (strcmp(buffer, "quit\n") == 0 ) { 
-		  close(clientSocket);
-		  printf("Disconnected from server %s \n",argv[1]);
-		  break;
+		if (strcmp(buffer, "quit\n") == 0) { 
+			close(clientSocket);
+			printf("Disconnected from server %s \n",argv[1]);
+			break;
+		} else if (strcmp(buffer, "\n") == 0) { /* ignoring the \r */
+			continue;
 		}
 
-	
 		readbytes=recv(clientSocket,buffer,7000,0);
 		if (readbytes < 0) {
 			printf("Error in receiving message \n");
@@ -91,7 +97,7 @@ main(int argc, char *argv[])
 			break;
 		} else {
 			buffer[readbytes-1]='\0'; 
-			printf("Server: \n%s\n", buffer);
+			printf("Server:\n%s\n", buffer);
 		}
 	}
 	return 0;

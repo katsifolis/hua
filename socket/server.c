@@ -13,6 +13,12 @@
 #define BUFFER_SIZE 2048
 #define QUIT 127
 
+/* COLORS */
+#define printb(...)	printf("\033[32m" __VA_ARGS__)
+#define printr(...)	printf("\033[31m" __VA_ARGS__)
+#define printm(...)	printf("\033[36m" __VA_ARGS__)
+#define COLOR_RESET	printf("\033[0m")
+
 void 
 error(const char *msg)
 {
@@ -23,9 +29,7 @@ error(const char *msg)
 void
 signalhandler(int signum)
 { 
-
 	printf("\nCaught signal %d \n",signum);
-
 	exit(signum);
 }
 
@@ -39,7 +43,6 @@ check_child_exit(int status)
 	} else if (WIFSTOPPED(status)) {
 		printf("Child process has stopped, signal code = %d\n",WSTOPSIG(status));
 	}
-
 	exit(EXIT_SUCCESS);
 }
 
@@ -142,7 +145,6 @@ main(int argc, char *argv[])
 	printf("Server socket is created.\n");
 
 
-//	bzero((char *) &serv_addr, sizeof(serv_addr));
 	memset((char *)&serv_addr, '\0', sizeof(serv_addr));
 	portno = atoi(argv[1]);
 	serv_addr.sin_family = AF_INET;
@@ -187,9 +189,11 @@ main(int argc, char *argv[])
 		
 				bzero(buffer, BUFFER_SIZE);
 				n = recv(newsockfd, buffer, BUFFER_SIZE - 1, 0);
-				printf("%d", n);
 				if (n <= 0) {
 					error("ERROR reading from socket");
+				} 
+				else if (n == '\n') {
+					continue;
 				}
 			
 				int pid=fork();
@@ -203,7 +207,7 @@ main(int argc, char *argv[])
 						check_child_exit(QUIT);
 					}
 
-					if(WEXITSTATUS(status)==QUIT) { /*Αν το παιδί επιστρέψει στον πατέρα code 127 με την exit τερματίζει ο πατέρας το loop.Έμπνευση από τη συνάρτηση check_child_exit.Για να είμαι πλήρως ειλικρινής δούλεψε με πείραμα,δεν ήμουν απόλυτα σίγουρη,δεν μπορώ να το εξηγήσω καλύτερα.*/
+					if(WEXITSTATUS(status)==QUIT) { 
 							break;
 				}
 
@@ -213,7 +217,7 @@ main(int argc, char *argv[])
 					  close(sockfd);
 					  exit(QUIT);
 					}
-					printf("Executing Client's %s command: %s\n",str,buffer);
+					printf("Executing Client's %s command:",str);
 
 
 					 if(strstr(buffer,"|")) {
