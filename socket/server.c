@@ -12,7 +12,6 @@
 
 #define BUFFER_SIZE 2048
 #define QUIT 127
-#define NOTCHANGED
 
 void 
 error(const char *msg)
