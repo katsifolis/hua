@@ -30,7 +30,6 @@ void
 signalhandler(int signum)
 { 
 	printf("\nCaught signal %d \n",signum);
-	close(sockfd);
 	exit(signum);
 }
 
@@ -184,12 +183,11 @@ main(int argc, char *argv[])
 			while(1) { 
 				printf("Client %s please enter a command\n",str);
 		
-				bzero(buffer, BUFFER_SIZE);
+				memset(buffer, '\0', BUFFER_SIZE);
 				n = recv(newsockfd, buffer, BUFFER_SIZE - 1, 0);
 				if (n <= 0) {
 					error("ERROR reading from socket");
-				} 
-				else if (n == '\n') {
+				} else if (n == '\n') {
 					continue;
 				}
 			
@@ -208,26 +206,25 @@ main(int argc, char *argv[])
 							break;
 					}
 
-			} else {  
-				   if(strcmp(buffer, "quit\n") == 0 || n < 0 ) {
-					  fprintf(stdout,"Disconnected from client %s\n",str);
-					  close(sockfd);
-					  exit(QUIT);
+				} else {  
+				if(strcmp(buffer, "END\n") == 0 || n < 0 ) {
+					fprintf(stdout,"Disconnected from client %s\n",str);
+					close(sockfd);
+					exit(QUIT);
 					}
 					printf("Executing Client's %s command:",str);
 
 
-					 if(strstr(buffer,"|")) {
+					if(strstr(buffer,"|")) {
 
 						int pid;
 						int fd[2];
 						pipe(fd);
 						switch(pid=fork()){
-
 							case 0:
 								runpipe(fd,newsockfd,buffer);
 							default:
-								while((pid=wait(&status))!=-1)
+								while((pid=wait(&status))!=-1);
 								exit(0);
 							case -1:
 								perror("fork");

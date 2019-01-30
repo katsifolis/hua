@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+#include <sys/time.h>
 #include <time.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -10,7 +11,7 @@
 #include <arpa/inet.h>
 #include <signal.h>
 #include <errno.h>
-
+#include <fcntl.h>
 #define BUFFER_SIZE 2048
 
 /* Macros */
@@ -18,6 +19,8 @@
 #define printb(...)	printf("\033[32m" __VA_ARGS__)
 #define printr(...)	printf("\033[31m" __VA_ARGS__)
 #define printm(...)	printf("\033[36m" __VA_ARGS__)
+
+int clientSocket;
 
 void
 error(const char *msg)
@@ -30,7 +33,21 @@ void
 signalhandler(int signum) 
 { 
 	printf("\nCaught signal %d \n",signum);
+		
 	exit(signum);
+}
+
+void
+check_server(int signum)
+{
+	char tmp[100];
+	memset(tmp, '\0', sizeof(tmp));
+	if (recv(clientSocket, tmp, 100, MSG_DONTWAIT) == 0) {
+			close(clientSocket);
+			error("Server Shutdown\n");
+			exit(1);
+	}
+	return;
 }
 
 int 
@@ -38,13 +55,23 @@ main(int argc, char *argv[])
 {
 	/* Initializations */
 	srand(time(NULL));
-	int clientSocket,result,portno;
+	int result,portno;
 	struct sockaddr_in serverAddr;
+	struct itimerval timer;
 	char buffer[BUFFER_SIZE];
 	int readbytes;
+	char tmp[100];
 
-	signal(SIGINT,signalhandler); 
-	
+	signal(SIGINT, signalhandler); 
+	signal(SIGALRM, check_server); 
+	/* First expiration */
+	timer.it_value.tv_sec = 0;
+	timer.it_value.tv_usec = 500000;
+	/* Interval (every then) */
+	timer.it_interval.tv_sec = 0;
+	timer.it_interval.tv_usec = 50000; /* in ms */
+	setitimer (ITIMER_REAL, &timer, NULL);	
+
 	/* Guard */
 	if (argc < 3)
 	{
@@ -74,7 +101,6 @@ main(int argc, char *argv[])
 
 	printb("Connected to server with ip address: \n");
 	COLOR_RESET;
-	
 
 	while (1) { 
 		int flag;
@@ -82,10 +108,7 @@ main(int argc, char *argv[])
 		COLOR_RESET;
 		memset(buffer, '\0', BUFFER_SIZE);
 		fgets(buffer, BUFFER_SIZE - 1, stdin); 
-		flag = write(clientSocket, buffer, strlen(buffer));
-		//send(clientSocket, buffer, strlen(buffer), MSG_NOSIGNAL);
-		printf("%d\n", flag);
-		printf("%d\n", errno);
+		flag = send(clientSocket, buffer, strlen(buffer), 0);
 		if (strcmp(buffer, "END\n") == 0) {
 			close(clientSocket);
 			printf("Disconnected from server %s \n",argv[1]);
@@ -94,6 +117,7 @@ main(int argc, char *argv[])
 	   	if (strcmp(buffer, "\n") == 0) continue;
 	   	
 		readbytes = recv(clientSocket, buffer, 7000, 0);
+		printf("%d\n", readbytes);
 		if (readbytes == 0) {
 			close(clientSocket);
 			error("Server Shutdown\n");
