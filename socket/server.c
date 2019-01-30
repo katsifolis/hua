@@ -10,14 +10,23 @@
 #include <signal.h>
 #include <ctype.h>
 
-#define BUFFER_SIZE 2048
+/* Macros */
 #define QUIT 127
-
-/* COLORS */
+#define BUFFER_SIZE 2048
 #define printb(...)	printf("\033[32m" __VA_ARGS__)
 #define printr(...)	printf("\033[31m" __VA_ARGS__)
 #define printm(...)	printf("\033[36m" __VA_ARGS__)
 #define COLOR_RESET	printf("\033[0m")
+
+/* Function Declarations */
+void error(const char *);
+void sig_int(int);
+void check_child_exit(int);
+char parse(char *[], char *);
+void runpipe(int [], int, char *);
+
+/* Globals */
+int game_counter;
 
 void 
 error(const char *msg)
@@ -27,7 +36,7 @@ error(const char *msg)
 }
 
 void
-signalhandler(int signum)
+sig_int(int signum)
 { 
 	printf("\nCaught signal %d \n",signum);
 	exit(signum);
@@ -88,13 +97,13 @@ runpipe(int pfd[],int socket,char *typedcommand)
 	switch(pid=fork()){
 		/* child */
 		case 0: 
-			parse(vec,comands[1]); // ανάλυση για την εντολή 2
+			/* Parsing, duplicating the fds for in, out, err and executing */
+			parse(vec,comands[1]);
 			dup2(pfd[0],0);
 			dup2(socket,1);
 			dup2(socket,2);
 			close(pfd[1]);
-			/*the child does not need this end of
-				the pipe*/
+			/* the child does not need this end of the pipe */
 			execvp(vec[0],vec);
 			perror(vec[0]);
 			exit(1);
@@ -113,6 +122,19 @@ runpipe(int pfd[],int socket,char *typedcommand)
 	}
 }
 
+void
+game(int counter)
+{
+	int i;
+	int holder[counter];
+	printf("Please pick a number from 0 - 20 %d times: ", counter);
+	for (i = 0; i < counter; i++) {
+		printf("Pick your number: "); 
+		scanf("%d", holder[i]);
+	}
+
+}
+
 int 
 main(int argc, char *argv[])
 {
@@ -129,7 +151,7 @@ main(int argc, char *argv[])
 	size_t characters;
 
 	/* Signal Contoller */
-	signal(SIGINT,signalhandler); 
+	signal(SIGINT,sig_int); 
 
 	if (argc < 2) {
 		fprintf(stderr, "No port provided\n");
@@ -179,6 +201,7 @@ main(int argc, char *argv[])
 		printf("The client address is :%s\n", str);
 
 
+		/* Fork the process to poll for commands */
 		if((childpid = fork()) == 0 ) { 
 			while(1) { 
 				printf("Client %s please enter a command\n",str);
@@ -191,57 +214,58 @@ main(int argc, char *argv[])
 					continue;
 				}
 			
-				int pid=fork();
+				int pid=fork(); /* Fork to execute the specified command */
 				if(pid==-1) {
 					perror("fork");
 					exit(1);
 				}
 				if(pid!=0) { 
+					/* 
+					 * Waiting for the child to return 
+					 * and kill it
+					 */
 					if(wait(&status)==-1) {
 						perror("wait");
 						check_child_exit(QUIT);
 					}
 
-					if(WEXITSTATUS(status)==QUIT) { 
-							break;
-					}
-
 				} else {  
-				if(strcmp(buffer, "END\n") == 0 || n < 0 ) {
-					fprintf(stdout,"Disconnected from client %s\n",str);
-					close(sockfd);
-					exit(QUIT);
-					}
-					printf("Executing Client's %s command:",str);
+					/* Client disconnects and server closes the socket */
+					if(strcmp(buffer, "END\n") == 0 || n < 0 ) {
+						printf("%s", buffer);
+						fprintf(stdout,"Disconnected from client %s\n",str);
+						close(sockfd);
+						exit(QUIT);
+						}
+						printf("Executing Client's %s command:",str);
 
+						/* pipe */
+						if(strstr(buffer,"|")) {
+							int pid;
+							int fd[2];
+							pipe(fd);
+							switch(pid=fork()){
+								case 0:
+									runpipe(fd,newsockfd,buffer);
+								default:
+									while((pid=wait(&status))!=-1);
+									exit(0);
+								case -1:
+									perror("fork");
+									exit(1);
 
-					if(strstr(buffer,"|")) {
+							}
 
-						int pid;
-						int fd[2];
-						pipe(fd);
-						switch(pid=fork()){
-							case 0:
-								runpipe(fd,newsockfd,buffer);
-							default:
-								while((pid=wait(&status))!=-1);
-								exit(0);
-							case -1:
-								perror("fork");
-								exit(1);
-
+						 } else {
+							parse(vec,buffer);
+							dup2(newsockfd,1); 
+							dup2(newsockfd,2);
+							execvp(vec[0],vec);
+							perror(vec[0]);
+							exit(1);
 						}
 
-					 } else {
-						parse(vec,buffer);
-						dup2(newsockfd,1); 
-						dup2(newsockfd,2);
-						execvp(vec[0],vec);
-						perror(vec[0]);
-						exit(1);
-					}
-
-			   }
+				   }
 			}
 
 		}
@@ -251,6 +275,3 @@ main(int argc, char *argv[])
 
 	return 0;
 }
-
-
-
