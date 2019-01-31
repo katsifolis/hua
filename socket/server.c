@@ -38,7 +38,7 @@ error(const char *msg)
 void
 sig_int(int signum)
 { 
-	printf("\nCaught signal %d \n",signum);
+	printf("\nCaught signal\nNUMBER OF SIGNAL: %d ",signum);
 	exit(signum);
 }
 
@@ -209,7 +209,7 @@ main(int argc, char *argv[])
 				memset(buffer, '\0', BUFFER_SIZE);
 				n = recv(newsockfd, buffer, BUFFER_SIZE - 1, 0);
 				if (n <= 0) {
-					error("ERROR reading from socket");
+					error("client disconnected");
 				} else if (n == '\n') {
 					continue;
 				}
@@ -232,7 +232,6 @@ main(int argc, char *argv[])
 				} else {  
 					/* Client disconnects and server closes the socket */
 					if(strcmp(buffer, "END\n") == 0 || n < 0 ) {
-						printf("%s", buffer);
 						fprintf(stdout,"Disconnected from client %s\n",str);
 						close(sockfd);
 						exit(QUIT);

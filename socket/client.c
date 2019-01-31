@@ -27,7 +27,7 @@
 void error(const char *);
 void sig_int(int);
 void check_server(int);
-int * game(int);
+char * game(int);
 
 
 /* Globals */
@@ -62,7 +62,7 @@ check_server(int signum)
 	return;
 }
 
-int *
+char *
 game(int counter)
 {
 	int i;
@@ -70,10 +70,13 @@ game(int counter)
 	char *game_vec = malloc(sizeof(1000));
 	printf("Please pick a number from 0 - 20 %d times\n", counter);
 	for (i = 0; i < counter; i++) {
+		tmp = 0;
 		printf("Pick your number: "); 
-		scanf("%c", &tmp);
+		scanf(" %c", &tmp);
 		game_vec[i] = tmp;
 	}
+	game_vec[++i] = '\0';
+
 	return game_vec;
 
 }
@@ -145,12 +148,6 @@ main(int argc, char *argv[])
 		COLOR_RESET;
 		memset(buffer, '\0', BUFFER_SIZE); /* fill the buffer with 0 */
 		fgets(buffer, BUFFER_SIZE - 1, stdin); /* get input */
-		if (strcmp(buffer, "END\n") == 0) {
-			char *game_vec = game(game_counter);
-			printf("%d", game_vec);
-			send(client_socket, game_vec, sizeof(game_vec), 0);
-			close(client_socket);
-		}
 		send(client_socket, buffer, strlen(buffer), 0);
 		if (strcmp(buffer, "END\n") == 0) {
 			close(client_socket);
