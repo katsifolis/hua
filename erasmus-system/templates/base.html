@@ -12,7 +12,7 @@
       <ul class="nav nav-tabs">
         {% if type_of_user == "admin" %}
 					<li class=""><a href="{{ url_for('admin_user_insert') }}">Insert User</a></li>
-					<li class=""><a href="{{ url_for('admin') }}">Delete user</a></li>
+					<li class=""><a href="{{ url_for('admin_user_delete') }}">Delete user</a></li>
 				{% else %}
 					<li class=""><a href="{{ url_for('home') }}">Home</a></li>
 					<li class=""><a href="{{ url_for('about') }}">About</a></li>

@@ -7,46 +7,11 @@ from flask import redirect
 from werkzeug.contrib.cache import SimpleCache
 import sqlite3
 
-
-
-"""
-TO DO
-i) find a way to differentiate menus for both students and admins
-ii)
-
-"""
-
-"""
-Helper
-
-all_courses := all_courses - courses_not_learned
-
-criteria_for_admittance = (courses >= all_courses - 5) &&
-                          (year > 3) &&
-                          (language not none)
-"""
-
 # Constant
 
 admins = ['vasilis', 'petros']
 all_courses_3rd_year = 32
 all_coures_4th_year = 42
-
-"""
-
-Description of the webpage:
-
-    Το πανεπιστήμιο διαθέτει ένα σύστημα ώστε να διαχειρίζεται τις ανταλλαγές φοιτητών μέσω του προγράμματος ανταλλαγής φοιτητών erasmus.
-
-Kάθε συνεργαζόμενο πανεπιστήμιο έχει συγκεκριμένο αριθμό φοιτητών που μπορεί να δεχτεί  με μέγιστη διάρκεια ενός εξαμήνου. Ο προϊστάμενος της γραμματείας ενημερώνει το σύστημα για τα διαθέσιμα συνεργαζόμενα πανεπιστήμια καθώς και για διαθέσιμες θέσεις σε καθένα από αυτά στην αρχή κάθε εξαμήνου.
-
-Τα κριτήρια για την επιλογή φοιτητή στο πλαίσιο ανταλλαγης erasmus  είναι τα εξής:
-
-- να μη χρωστάει πάνω από 5 συνολικά μαθήματα
-- να είναι στο 3ο ή 4ο έτος
-- να γνωρίζει την ξένη γλώσσα η οποία διδάσκεται στο εκάστοτε πανεπιστήμιο της επιλογής του.
-
-"""
 
 # Initialize the app
 
@@ -84,13 +49,6 @@ language:2
 """
 
 # Pushes user to submissions db
-
-"""
-ISSUES:
-
-i)VALUES DONT GET PUSHED TO DB
-
-"""
 
 def push_to_db(university):
     print(university)
@@ -170,44 +128,11 @@ def check_eligibility(username, universities):
     except:
         print('Not fetched anything')
 
-
+# Generic Routes
 
 @app.route('/')
 def home(logged = None, type_of_user = None):
     return render_template('home.html', logged = cache.get('logged'), type_of_user = cache.get('type_of_user'))
-
-@app.route('/admin/', methods=['GET', 'POST'])
-def admin(logged = None, type_of_user = None, msg = None):
-    if request.method == 'POST':
-        try:
-            username = request.form['delete']
-            c.execute("delete from users where username='%s'" % username)
-            conn.commit()
-        except:
-            print("error in deleting '%s'" % username)
-        finally:
-            msg = "The user '%s' has been deleted successfully" % username
-            return render_template('admin.html', logged = cache.get('logged'), type_of_user = cache.get('type_of_user'), msg = msg)
-
-    else:
-        return render_template('admin.html', logged = cache.get('logged'), type_of_user = cache.get('type_of_user'))
-
-@app.route('/admin_user_insert/', methods=['GET', 'POST'])
-def admin_user_insert(logged = None, type_of_user = None, msg = None):
-    if request.method == 'POST':
-        try:
-            username = request.form['username']
-            password = request.form['password']
-            c.execute("insert into users values('%s', '%s', null, null, null, null, null, null, 'student')" % (username, password))
-            conn.commit()
-        except:
-            print("error in creating '%s'" % username)
-        finally:
-            msg = "The user '%s' has been created successfully" % username
-            return render_template('admin_user_insert.html', logged = cache.get('logged'), type_of_user = cache.get('type_of_user'), msg = msg)
-
-    else:
-        return render_template('admin_user_insert.html', logged = cache.get('logged'), type_of_user = cache.get('type_of_user'))
 
 
 @app.route('/about/')
@@ -218,52 +143,12 @@ def about(logged = None, type_of_user = None):
 def logout(msg = None):
     if cache.get('logged'):
         cache.set('logged', False)
+        cache.set('type_of_user', 'none')
         return render_template('home.html', msg = "You successfully logged out")
     else:
         msg = "You are not logged in"
         return render_template('login.html', msg = msg)
 
-@app.route('/create_request/', methods=['GET','POST'])
-def create_request(logged = None, universities = None, type_of_user = None):
-    if request.method == 'POST':
-        try:
-            universities = [request.form['uni1'], request.form['uni2'], request.form['uni3']]
-            print(universities)
-            username = cache.get('username')
-            print(username)
-            check_eligibility(username, universities)
-
-        except:
-            print('Not found')
-              
-        return render_template('create_request.html', logged = cache.get('logged'), type_of_user = cache.get('type_of_user'))
-
-    else:
-
-        return render_template('create_request.html', logged = cache.get('logged'), type_of_user = cache.get('type_of_user'))
-        
-
-@app.route('/update_available_unis/', methods=['GET', 'POST'])
-def update_available_unis(logged= None, type_of_user = None):
-    if request.method == 'POST':
-        try:
-            name        = request.form['name']
-            acceptances = request.form['acceptances']
-            language    = request.form['language']
-            uni = (name, acceptances, language)
-            query = c.execute('insert into uni values(?, ?, ?)', uni)
-            conn.commit()
-
-        except:
-            print("error updating unis") 
-        finally:
-            return render_template('update_available_unis.html', logged = cache.get('logged'), type_of_user = cache.get('type_of_user'))
-                
-
-    else:
-        return render_template('update_available_unis.html', logged = cache.get('logged'), type_of_user = cache.get('type_of_user'))
-
-    
 @app.route('/login/', methods=['GET', 'POST'])
 def login(username=None, password=None, query=None, msg=None, logged = None, type_of_user = None):
     # Login Logic 
@@ -309,6 +194,108 @@ def login(username=None, password=None, query=None, msg=None, logged = None, typ
             return render_template('login.html', msg=msg)
         else:
             return render_template('login.html') 
+
+# Admin Routes
+
+@app.route('/admin_user_delete/', methods=['GET', 'POST'])
+def admin_user_delete(logged = None, type_of_user = None, msg = None):
+    if cache.get('type_of_user') == 'admin':
+        if request.method == 'POST':
+            try:
+                username = request.form['delete']
+                c.execute("delete from users where username='%s'" % username)
+                conn.commit()
+            except:
+                print("error in deleting '%s'" % username)
+            finally:
+                msg = "The user '%s' has been deleted successfully" % username
+                return render_template('admin_user_delete.html', logged = cache.get('logged'), type_of_user = cache.get('type_of_user'), msg = msg)
+
+        else:
+            return render_template('admin_user_delete.html', logged = cache.get('logged'), type_of_user = cache.get('type_of_user'))
+    else:
+        return 'You are forbidden to enter'
+
+@app.route('/admin_user_insert/', methods=['GET', 'POST'])
+def admin_user_insert(logged = None, type_of_user = None, msg = None):
+    if cache.get('type_of_user') == 'admin':
+        if request.method == 'POST':
+            try:
+                username = request.form['username']
+                role     = request.form['role']
+                password = request.form['password']
+                c.execute("insert into users values('%s', '%s', null, null, null, null, null, null, '%s')" % (username, password, role))
+                conn.commit()
+            except:
+                print("error in creating '%s'" % username)
+            finally:
+                msg = "The user '%s' has been created successfully" % username
+                return render_template('admin_user_insert.html', logged = cache.get('logged'), type_of_user = cache.get('type_of_user'), msg = msg)
+
+        else:
+            return render_template('admin_user_insert.html', logged = cache.get('logged'), type_of_user = cache.get('type_of_user'))
+    else:
+        return 'You are forbidden to enter'
+
+# Student Routes
+
+@app.route('/create_request/', methods=['GET','POST'])
+def create_request(logged = None, universities = None, type_of_user = None, msg = None):
+    if cache.get('type_of_user') == 'student':
+        if request.method == 'POST':
+            try:
+                universities = [request.form['uni1'], request.form['uni2'], request.form['uni3']]
+                print(universities)
+                username = cache.get('username')
+                print(username)
+                check_eligibility(username, universities)
+
+            except:
+                print('Not found')
+            msg = 'Thank you, your results will be available to you after we take some time to process them!'      
+            return render_template('create_request.html', logged = cache.get('logged'), type_of_user = cache.get('type_of_user'), msg = msg)
+
+        else:
+
+            return render_template('create_request.html', logged = cache.get('logged'), type_of_user = cache.get('type_of_user'))
+    else:
+        return 'You are forbidden to enter'
+
+@app.route('/status/')
+def status(logged = None):
+    try:
+        usr = cache.get('username')
+    except:
+        return -1
+
+        
+        
+# Secretary Routes
+
+@app.route('/update_available_unis/', methods=['GET', 'POST'])
+def update_available_unis(logged= None, type_of_user = None):
+    if cache.get('type_of_user') == 'secretary':
+        if request.method == 'POST':
+            try:
+                name        = request.form['name']
+                acceptances = request.form['acceptances']
+                language    = request.form['language']
+                uni = (name, acceptances, language)
+                query = c.execute('insert into uni values(?, ?, ?)', uni)
+                conn.commit()
+
+            except:
+                print("error updating unis") 
+            finally:
+                return render_template('update_available_unis.html', logged = cache.get('logged'), type_of_user = cache.get('type_of_user'))
+                    
+
+        else:
+            return render_template('update_available_unis.html', logged = cache.get('logged'), type_of_user = cache.get('type_of_user'))
+    else:
+        return 'You are forbidden to enter'
+
+    
 
 if __name__ == '__main__':
     app.run(debug=True)
