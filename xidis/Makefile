@@ -1,4 +1,4 @@
-CC = clang
+CC = gcc
 CFLAGS = -std=c11 -Wall -g -Wconversion -Wsign-conversion -O0
 CPPFLAGS = -D_XOPEN_SOURCE=700 -D_DEFAULT_SOURCE
 

@@ -1,6 +1,4 @@
 #include "queue.h"
-
-
 #include <errno.h>
 #include <stdlib.h>
 
@@ -22,9 +20,10 @@ struct queue {
 QUEUE *queue_new(void)
 {
     QUEUE *new;
+	
 
-    if ((new = calloc(1, sizeof(QUEUE))) == NULL) {
-	return NULL;
+	if ((new = calloc(1, sizeof(QUEUE))) == NULL) {
+		return NULL;
     }
 
     return new;
@@ -37,11 +36,11 @@ void queue_destroy(QUEUE *queue)
     struct node *cursor = queue->head;
 
     while (cursor != NULL) {
-	prev = cursor;
-	cursor = cursor->next;
+		prev = cursor;
+		cursor = cursor->next;
 
-	tcb_destroy(prev->thread);
-	free(prev);
+		tcb_destroy(prev->thread);
+		free(prev);
     }
 
     free(queue);
@@ -61,7 +60,7 @@ int queue_enqueue(QUEUE *queue, TCB *elem)
     struct node *new;
 
     if ((new = malloc(sizeof(struct node))) == NULL) {
-	return errno;
+		return errno;
     }
 
     new->thread = elem;
@@ -70,9 +69,9 @@ int queue_enqueue(QUEUE *queue, TCB *elem)
     // Enqueue the new node
 
     if (queue->head == NULL) {
-	queue->head = new;
+		queue->head = new;
     } else {
-	struct node *parent = queue->head;
+		struct node *parent = queue->head;
 	while (parent->next != NULL) {
 	    parent = parent->next;
 	}
@@ -109,18 +108,18 @@ TCB *queue_remove_id(QUEUE *queue, int id)
     while (cur != NULL) {
 	if (cur->thread->id == id) {
 	    if (prev == NULL) {
-		queue->head = cur->next;
+			queue->head = cur->next;
 	    } else {
-		prev->next = cur->next;
+			prev->next = cur->next;
 	    }
 
-	    TCB *retval = cur->thread;
-	    free(cur);
-	    return retval;
-	}
+			TCB *retval = cur->thread;
+			free(cur);
+			return retval;
+		}
 
-	prev = cur;
-	cur = cur->next;
+		prev = cur;
+		cur = cur->next;
     }
 
     return NULL;
