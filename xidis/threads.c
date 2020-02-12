@@ -1,7 +1,6 @@
 #include "threads.h"
 #include "tcb.h"
 #include "queue.h"
-
 #include <errno.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -29,20 +28,22 @@ static bool malloc_stack(TCB *);
 
 static void block_sigprof(void);
 static void unblock_sigprof(void);
-
 void delay(int secs);
 
-void delay(int secs) {
+void 
+delay
+(int secs) {
 
     int m_secs = 1000 * secs;
     clock_t clk = clock();
     while ( clock() < clk + m_secs );
 
     return;
-
 }
 
-int threads_create(void *(*start_routine) (void *), void *arg)
+int
+threads_create
+(void *(*start_routine) (void *), void *arg)
 {
     block_sigprof();
 
@@ -51,6 +52,7 @@ int threads_create(void *(*start_routine) (void *), void *arg)
     static bool initialized;
 
     if (! initialized) {
+
 	if (! init_queues()) {
 	    abort();
 	}
@@ -101,7 +103,9 @@ int threads_create(void *(*start_routine) (void *), void *arg)
 }
 
 
-void threads_exit(void *result)
+void
+threads_exit
+(void *result)
 {
     if (running == NULL) {
         exit(EXIT_SUCCESS);
@@ -122,11 +126,13 @@ void threads_exit(void *result)
 }
 
 
-int threads_join(int id, void **result)
+int
+threads_join
+(int id, void **result)
 {
     if (id < 0) {
-	errno = EINVAL;
-	return -1;
+		errno = EINVAL;
+		return -1;
     }
 
     block_sigprof();
@@ -134,16 +140,18 @@ int threads_join(int id, void **result)
     unblock_sigprof();
 
     if (block == NULL) {
-	return 0;
+		return 0;
     } else {
-	*result = block->return_value;
-	tcb_destroy(block);
-	return id;
+		*result = block->return_value;
+		tcb_destroy(block);
+		return id;
     }
 }
 
 
-static bool init_queues(void)
+static bool
+init_queues
+(void)
 {
     if ((ready = queue_new()) == NULL) {
 	return false;
@@ -157,17 +165,19 @@ static bool init_queues(void)
     return true;
 }
 
-static bool init_first_context(void)
+static bool
+init_first_context
+(void)
 {
     TCB *block;
 
     if ((block = tcb_new()) == NULL) {
-	return false;
+		return false;
     }
 
     if (getcontext(&block->context) == -1) {
-	tcb_destroy(block);
-	return false;
+		tcb_destroy(block);
+		return false;
     }
 
     running = block;
@@ -175,7 +185,9 @@ static bool init_first_context(void)
 }
 
 
-static bool init_profiling_timer(void)
+static bool
+init_profiling_timer
+(void)
 {
     // Install signal handler
 
@@ -215,7 +227,9 @@ static bool init_profiling_timer(void)
 }
 
 
-static void handle_sigprof(int signum, siginfo_t *nfo, void *context)
+static void
+handle_sigprof
+(int signum, siginfo_t *nfo, void *context)
 {
     int old_errno = errno;
 
@@ -252,7 +266,9 @@ static void handle_sigprof(int signum, siginfo_t *nfo, void *context)
 }
 
 
-static void handle_thread_start(void)
+static void
+handle_thread_start
+(void)
 {
     block_sigprof();
     TCB *this = running;
@@ -263,7 +279,9 @@ static void handle_thread_start(void)
 }
 
 	 
-static bool malloc_stack(TCB *thread)
+static bool
+malloc_stack
+(TCB *thread)
 {
     // Get the stack size
 
@@ -292,7 +310,9 @@ static bool malloc_stack(TCB *thread)
 }
 
 
-static void block_sigprof(void)
+static void
+block_sigprof
+(void)
 {
     sigset_t sigprof;
     sigemptyset(&sigprof);
@@ -305,7 +325,9 @@ static void block_sigprof(void)
 }
 
 
-static void unblock_sigprof(void)
+static void
+unblock_sigprof
+(void)
 {
     sigset_t sigprof;
     sigemptyset(&sigprof);

@@ -3,13 +3,15 @@
 #include <stdlib.h>
 
 
-struct node {
+struct node
+{
     TCB *thread;
     struct node *next;
 };
 
 
-struct queue {
+struct queue 
+{
     struct node *head;
     size_t size;
 };
@@ -17,7 +19,9 @@ struct queue {
 
 
 
-QUEUE *queue_new(void)
+QUEUE *
+queue_new
+(void)
 {
     QUEUE *new;
 	
@@ -30,7 +34,9 @@ QUEUE *queue_new(void)
 }
 
 
-void queue_destroy(QUEUE *queue)
+void 
+queue_destroy
+(QUEUE *queue)
 {
     struct node *prev = NULL;
     struct node *cursor = queue->head;
@@ -47,13 +53,17 @@ void queue_destroy(QUEUE *queue)
 }
 
 
-size_t queue_size(const QUEUE *queue)
+size_t 
+queue_size
+(const QUEUE *queue)
 {
     return queue->size;
 }
 
 
-int queue_enqueue(QUEUE *queue, TCB *elem)
+int
+queue_enqueue
+(QUEUE *queue, TCB *elem)
 {
     // Create the new node
 
@@ -83,7 +93,9 @@ int queue_enqueue(QUEUE *queue, TCB *elem)
 }
 
 
-TCB *queue_dequeue(QUEUE *queue)
+TCB *
+queue_dequeue
+(QUEUE *queue)
 {
     struct node *old_head = queue->head;
     queue->head = queue->head->next;
@@ -96,7 +108,9 @@ TCB *queue_dequeue(QUEUE *queue)
 }
 
 
-TCB *queue_remove_id(QUEUE *queue, int id)
+TCB *
+queue_remove_id
+(QUEUE *queue, int id)
 {
     if (queue->head == NULL) {
 	return NULL;

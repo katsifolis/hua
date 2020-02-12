@@ -1,8 +1,9 @@
 #include "tcb.h"
 #include <stdlib.h>
 
-TCB *tcb_new(void)
-{
+TCB *
+tcb_new
+(void) {
     static int next_id = 1;
 
     TCB *new;
@@ -16,7 +17,9 @@ TCB *tcb_new(void)
 }
 
 
-void tcb_destroy(TCB *block)
+void 
+tcb_destroy
+(TCB *block)
 {
     if (block->has_dynamic_stack) {
 	free(block->context.uc_stack.ss_sp);
