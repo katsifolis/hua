@@ -17,24 +17,51 @@ job1
 		return arg;
 	} else { count = 1; }
 }
+
+static void *
+job2
+(void *arg)
+{
+
+	char **tmp_buff = malloc(sizeof(char*) * 100);
+	for (int i = 0; i < 100; i++) {
+			tmp_buff[i] = malloc(sizeof(char*) *100);
+	}
+
+	for (int i = 0; i < 100; i++) {
+		for (int j =0; j< 100; j++) {
+			tmp_buff[i][j] = 0;
+		}
+		
+	}
+	for (int i = 0; i < 100; i++) {
+		free(tmp_buff[i]);
+	}
+	free(tmp_buff);
+
+	return arg;
+}
+
 /*
  * 1. Opens the files
  * 2. Searches for pending workloads
  * 3. Executes the jobs
  */
 
-void 
+void
 init
 (char *arg) {
 
 	char *buffer			= NULL;
 	char * line				= NULL;
 	int length				= 0;
-	int arg1				= 0;
+	int param				= 0;
+	int init_time			= 0;
 	size_t len				= 0;
 	ssize_t read			= 0;
 	FILE *f					= fopen(arg, "r");
 	void (*job_ptr)(int)	= &job1;
+	int r[3]; 
 
 	
 	if (f == NULL) {
@@ -52,11 +79,12 @@ init
 	while ((read = getline(&line, &len, f)) != -1) {
 		char *str = strtok(line, " ");
 		while (str != NULL) {
-			if ((strcmp(str, "job")) == 0) {
+			if ((strcmp(str, "job1")) == 0) {
 				str = strtok(NULL, " ");
-				arg1 = atoi(str);
+				param = atoi(str);
 			} else {
 				str = strtok(NULL, " ");
+				init_time = atoi(str);
 			}
 		}
 
@@ -64,6 +92,7 @@ init
 	}
 
  	fclose (f);
+	return;
 }
 
 int
@@ -71,14 +100,19 @@ main
 (int argc, char * argv[])
 {
 	// Guard 
-    if (argc < 2) {
-		printf("file not given\n");
-		exit(1);
-	}
+//    if (argc < 2) {
+//		printf("file not given\n");
+//		exit(1);
+//	}
+//
+//    char buff[10] = {0}; // filename buff
+//   	strcpy(buff, argv[1]);
+//    init(buff);
 
-   	strcpy(buff, argv[1]);
-    init(buff);
-    char buff[10] = {0}; // filename buff
+	delay(200);
+	system("clear");
+	printf("A user level thread library using ucontext..\n");
+	delay(1500);
 
 	int threads[NUM_OF_THREADS];
 
@@ -86,7 +120,7 @@ main
 	for (int i = 0; i < 8; ++i) {
 		void *arg = (void *) i;
 
-		threads[i] = threads_create(job1, arg);
+		threads[i] = threads_create(job2, arg);
 		if (threads[i] == -1 ) {
 			perror("threads_create");
 			exit(EXIT_FAILURE);
