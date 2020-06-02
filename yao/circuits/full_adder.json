@@ -1,0 +1,12 @@
+{ 
+    "name": "1-bit full adder Cin, A, B -> Sum, Cout",
+    "alice": [1, 2, 3],
+    "out":   [5, 11],
+    "gates": [ 
+      { "id":1,  "type":"XOR", "in": [2, 3] },
+      { "id":2,  "type":"XOR", "in": [1, 4] }, 
+      { "id":3,  "type":"AND", "in": [2, 3] },
+      { "id":4,  "type":"AND", "in": [1, 4] },
+      { "id":15, "type":"OR",  "in": [6, 7] }
+    ]
+}

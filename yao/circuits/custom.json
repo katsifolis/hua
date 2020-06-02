@@ -1,0 +1,10 @@
+{ 
+    "name": "AND A, B -> Z",
+    "alice": [1, 2, 2, 3],
+    "out":   [0],
+    "gates": [ 
+      { "id":1,  "type":"AND", "in": [1, 2] },
+	  { "id":2,  "type":"AND", "in": [2, 3] },
+	  { "id":3,  "type":"OR",  "in": [0, 0] }
+    ]
+}

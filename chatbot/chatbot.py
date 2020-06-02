@@ -1,6 +1,7 @@
 from chatterbot import ChatBot
 from chatterbot.trainers import ChatterBotCorpusTrainer
 from chatterbot.response_selection import get_most_frequent_response
+import os
 
 # Uncomment the following lines to enable verbose logging
 # import logging
@@ -8,26 +9,25 @@ from chatterbot.response_selection import get_most_frequent_response
 
 # Create a new instance of a ChatBot
 bot = ChatBot(
-    'Terminal',
+    'Xazoulis',
     storage_adapter='chatterbot.storage.SQLStorageAdapter',
     logic_adapters=[
-            'chatterbot.logic.MathematicalEvaluation',
-            'chatterbot.logic.BestMatch',
-            {
-            'import_path': 'chatterbot.logic.SpecificResponseAdapter',
-            'input_text': 'Help me!',
-            'output_text': 'Ok, here is a link: http://chatterbot.rtfd.org'
-            }
-    ],
+        {
+            'import_path':'chatterbot.logic.BestMatch',
+            'default_response': 'I am sorry, but I do not understand.',
+            'maximum_similarity_threshold': 0.6
+
+        }],
     database_uri='sqlite:///database.db',
     responce_selection_method=get_most_frequent_response
 )
 
-print('Type something to begin...')
 trainer = ChatterBotCorpusTrainer(bot)
 trainer.train(
     "chatterbot.corpus.english"
 )
+os.system('clear')
+print('Type something to begin...')
 
 # The following loop will execute each time the user enters input
 while True:
