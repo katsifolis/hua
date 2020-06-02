@@ -1,8 +1,8 @@
 { 
-    "name": "AND A, B -> Z",
-    "alice": [1, 2],
-    "out":   [0],
+    "name": "AND",
+    "alice": [1, 0],
+    "out":   [1],
     "gates": [ 
-      { "id":1,  "type":"AND", "in": [1, 2] }
+      { "id":1,  "type":"AND", "in": [1, 1] }
     ]
 }
