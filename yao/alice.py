@@ -47,9 +47,8 @@ def gen_garbled_table_not(w, inputs, c):
     ciphers = []
 
     for i in range(0,2):
-            encr = encrypt(w['a'][i], int(not(i)).to_bytes(8, byteorder='big'))
+            encr = encrypt(w[chr(c)][i], int(not(i)).to_bytes(1, byteorder='big'))
             ciphers.append(encr)
-
 
     random.shuffle(ciphers) # permute the contents of garbled gate
 
@@ -63,9 +62,11 @@ def gen_garbled_table(w, inputs, op, c):
 
     for i in range(0,2):
         for j in range(0, 2):
-            print(bool_gate[op](i, j))
-            encr = encrypt(w[chr(c).lower()][i], encrypt(w[chr(c).lower()][j], int(bool_gate[op](inputs[i], inputs[j])).to_bytes(1, byteorder='big')))
+            
+            #encr = encrypt(w[chr(c)][a], encrypt(w[chr(c+1)][b], int(bool_gate[op](a, b)).to_bytes(1, byteorder='big')))
+            encr = encrypt(w[chr(c)][i], encrypt(w[chr(c+1)][j], bytes(w[chr(c+2)][bool_gate[op](i, j)])))
             ciphers.append(encr)
+
 
 
     random.shuffle(ciphers) # permute the contents of garbled gate
@@ -87,32 +88,29 @@ def alice(circ):
     wires    = {}
     keys     = {}
     g_tables = {}
-    a, b, c  = 0, 0, 0
-    rnd_bit  = lambda: random.randint(0,1)
     c        = 65 # start labeling from a 
     
 
     # Constructing the labels
     for w in range(N):
         for b in range(0, 2):
-            wires['{0}'.format(chr(65+w)).lower()] = {0: Fernet.generate_key(), 1: Fernet.generate_key()}
+            wires['{0}'.format(chr(65+w))] = {0: Fernet.generate_key(), 1: Fernet.generate_key()}
 
 
     for g in gates:
+
         if g['type'] == 'NOT':
             ciphers = gen_garbled_table_not(wires,  g['in'], c)
             g_tables[g['id']] = ciphers
-            keys[g['id']] = [wires[chr(c).lower()][rnd_bit()]]
+            keys[g['id']] = [wires[chr(c)][a_inputs[0]]]
         else:
             ciphers = gen_garbled_table(wires, g['in'], g['type'], c)
             g_tables[g['id']] = ciphers
-            keys[g['id']] = [wires[chr(c).lower()][rnd_bit()], wires[chr(c+1).lower()][rnd_bit()]]
+            keys[g['id']] = [wires[chr(c)][a_inputs[0]], wires[chr(c+1)][a_inputs[1]]]
 
         c = c + 2
+        a_inputs = a_inputs[2:]
         
-    pprint(wires)
-    pprint(keys)
-    pprint(g_tables)
 
 
 
@@ -123,6 +121,15 @@ def alice(circ):
 
     # object to send
     z = bob.bob(g_tables, keys) # Sending the garbled circuit
+    c = 0
+    for k, v in wires.items():
+        for val in v.items():
+            if z[c] == val[1]:
+                print(val[0])
+
+            c = not(c)
+
+    pprint(wires)
 
 
     

@@ -3,6 +3,6 @@
 	"alice": [0],
 	"out":   [2],
 	"gates": [ 
-	  { "id":2, "type":"NOT", "in": [1] } 
+	  { "id":2, "type":"NOT", "in": [0] } 
 	]
 }

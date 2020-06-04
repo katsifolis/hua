@@ -19,25 +19,24 @@ def decrypt(key, data):
 def bob(garbled_table, inputs):
 
     val = 0
+    out = []
 
     for k, v in garbled_table.items():
         x = inputs[k][0]
         y = inputs[k][1]
-        print(x)
-        print(y)
-        #pprint(garbled_table[k])
         for value in v:
             try:
-                if y == -1:
+                if y == None:
                     val = decrypt(x, value)
-                    break
+                    out.append(val)
                 else:
                     val = decrypt(y, decrypt(x, value))
-                    print("AAAAAAAAAAAA")
-                    print(val)
+                    out.append(val)
+
 
             except:
                 print('r')
                 pass
 
-    return val
+    print(out)
+    return out

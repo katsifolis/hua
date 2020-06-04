@@ -1,8 +1,8 @@
 { 
 	"name": "XOR",
-	"alice": [1, 2],
+	"alice": [1, 1],
 	"out":   [3],
 	"gates": [ 
-	  { "id":3, "type":"XOR", "in": [1, 2] } 
+	  { "id":3, "type":"XOR", "in": [18, 2] } 
 	]
 }
