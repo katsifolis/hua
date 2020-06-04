@@ -22,8 +22,12 @@ def bob(garbled_table, inputs):
     out = []
 
     for k, v in garbled_table.items():
-        x = inputs[k][0]
-        y = inputs[k][1]
+        x = inputs[k]
+        print(x)
+
+        if len(inputs.items()) < 2:
+            y = None
+
         for value in v:
             try:
                 if y == None:
@@ -33,10 +37,8 @@ def bob(garbled_table, inputs):
                     val = decrypt(y, decrypt(x, value))
                     out.append(val)
 
-
             except:
                 print('r')
                 pass
 
-    print(out)
     return out
