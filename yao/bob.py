@@ -22,11 +22,17 @@ def bob(garbled_table, inputs):
     out = []
 
     for k, v in garbled_table.items():
-        x = inputs[k]
+
+        print(len(inputs))
+        if len(inputs) < 2:
+            y = None
+            x = inputs[k]
+        else:
+            x = inputs[k][0]
+            y = inputs[k][1]
+
         print(x)
 
-        if len(inputs.items()) < 2:
-            y = None
 
         for value in v:
             try:

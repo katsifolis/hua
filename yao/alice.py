@@ -18,6 +18,12 @@ from pprint import pprint
 
 # Encrypt the output so bob doesn't know the value
 
+# 1. Είναι υποχρεωτικό το optimazation e.g Point-and-Permute ή μπρουμε να στειλόυμε
+#    και τα 4 ciphertext ston bob?
+
+# 2. Poios kanei tis praxeis (alice or bob) kai poios o logos gia epikoinwnia an to kanei
+#    i proti
+
 bool_gate = {
     "AND" : lambda x, y: x & y,
     "OR"  : lambda x, y: x | y,
@@ -48,8 +54,9 @@ def gen_garbled_table_not(w, inputs, c):
 
     # Encryptiong without optimization techniques e.g Point-and-Permute
     for i in range(0,2):
-            encr = encrypt(w[chr(c)][i], bytes(w[chr(c+1)][int(not(i))]))
-            ciphers.append(encr)
+        key_in  = w[chr(c)][i]
+        encr = encrypt(key_in, bytes(w[chr(c+1)][int(not(i))]))
+        ciphers.append(encr)
 
     random.shuffle(ciphers) # permute the contents of garbled gate
 
@@ -106,6 +113,8 @@ def alice(circ):
     for w in range(N):
         wires['{0}'.format(chr(65+w))] = (Fernet.generate_key(), Fernet.generate_key())
 
+    pprint(wires)
+
 
     # Constructing the Garbled tables.
     for g in gates:
@@ -123,12 +132,26 @@ def alice(circ):
             g_tables[g['id']] = ciphers
             c += 1
         else:
-            keys[g['id']] = (wires[chr(c)][r()], wires[chr(c+1)][r()])
+            a, b = g['in'][0], g['in'][1]
+            bit_out = int(bool_gate[g['type']](a, b))
+            encr_bit_out = bit_out ^ r()
+            print(bit_out)
+
+            lab_a = chr(c) + str(a)
+            lab_b = chr(c+1) + str(b)
+            lab_c = chr(c+2) + str(bit_out)
+
+            assoc[lab_a] = wires[chr(c)][r()]
+            assoc[lab_b] = wires[chr(c+1)][r()]
+            assoc[lab_c] = wires[chr(c+2)][r()]
+
+            keys[g['id']] = [assoc[lab_a], assoc[lab_b]]
             ciphers = gen_garbled_table(wires, g['in'], g['type'], c)
             g_tables[g['id']] = ciphers
             c += 2
 
         a_inputs = a_inputs[2:]
+        pprint(assoc)
         
 
 
@@ -140,6 +163,9 @@ def alice(circ):
     # object to send
 
     z = bob.bob(g_tables, keys) # Sending the garbled circuit
+    pprint(wires)
+    pprint(assoc)
+    pprint(keys)
     print()
     print(z)
 
