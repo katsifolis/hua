@@ -1,12 +1,10 @@
 import random
 import json
 import sys
+import os
 from pprint              import pprint
-from cryptography.fernet import Fernet
-from os                  import urandom
 from hashlib             import sha256
 from operator            import xor
-
 
 # Implement BOB #
 
@@ -15,10 +13,6 @@ bool_op = {
     "OR"  : lambda x, y: x | y,
     "XOR" : lambda x, y: x ^ y,
 }
-
-def encrypt(key, data):
-    f = Fernet(key)
-    return f.encrypt(data)
 
 def byte_xor(ba1, ba2):
     return bytes([_a ^ _b for _a, _b in zip(ba1, ba2)])
@@ -30,10 +24,10 @@ def unary_gate(x, gid):
     pbitz = random.randint(0,1)
 
     # Constructing the labels
-    k0x  = str(random.getrandbits(128)).encode('utf-8')[:32] + str(pbitx).encode('utf-8') 
-    k1x  = str(random.getrandbits(128)).encode('utf-8')[:32] + str(int(not(pbitx))).encode('utf-8')
-    k0z  = str(random.getrandbits(128)).encode('utf-8')[:32] + str(pbitz).encode('utf-8')
-    k1z  = str(random.getrandbits(128)).encode('utf-8')[:32] + str(int(not(pbitz))).encode('utf-8')
+    k0x = str(random.getrandbits(128)).encode('utf-8')[:32] + str(pbitx).encode('utf-8') 
+    k1x = str(random.getrandbits(128)).encode('utf-8')[:32] + str(int(not(pbitx))).encode('utf-8')
+    k0z = str(random.getrandbits(128)).encode('utf-8')[:32] + str(pbitz).encode('utf-8')
+    k1z = str(random.getrandbits(128)).encode('utf-8')[:32] + str(int(not(pbitz))).encode('utf-8')
 
     encr    = {}
     encr[0] = sha256(k0x + gid).digest() 
@@ -42,8 +36,6 @@ def unary_gate(x, gid):
     assoc = {} # set containing resutls of operation
     counter = 0
     for i in range(0,2):
-            op = int(not(i))
-            assoc[counter] = op
             counter += 1
 
     # Constructing the encryption
@@ -67,24 +59,20 @@ def unary_gate(x, gid):
 
 def binary_gate(x, y, gid, gtype):
 
-    # Color bits
-    pbity = random.randint(0,1)
-    pbitx = random.randint(0,1)
-    pbitz = random.randint(0,1)
-
     # Constructing the labels
-    k0x  = str(random.getrandbits(128)).encode('utf-8')[:32] + str(pbitx).encode('utf-8') 
-    k1x  = str(random.getrandbits(128)).encode('utf-8')[:32] + str(int(not(pbitx))).encode('utf-8')
-    k0y  = str(random.getrandbits(128)).encode('utf-8')[:32] + str(pbity).encode('utf-8')
-    k1y  = str(random.getrandbits(128)).encode('utf-8')[:32] + str(int(not(pbity))).encode('utf-8')
-    k0z  = str(random.getrandbits(128)).encode('utf-8')[:32] + str(pbitz).encode('utf-8')
-    k1z  = str(random.getrandbits(128)).encode('utf-8')[:32] + str(int(not(pbitz))).encode('utf-8')
+    k0x  = bytes(os.urandom(32))
+    k1x  = bytes(os.urandom(32))
+    k0y  = bytes(os.urandom(32))
+    k1y  = bytes(os.urandom(32))
+    k0z  = bytes(os.urandom(32))
+    k1z  = bytes(os.urandom(32))
 
     encr    = {}
-    encr[0] = sha256(k0x + k0y + gid).digest() 
-    encr[1] = sha256(k0x + k1y + gid).digest()
-    encr[2] = sha256(k1x + k0y + gid).digest()
-    encr[3] = sha256(k1x + k1y + gid).digest()
+    encr[0] = sha256(k0x + k0y).digest() 
+    encr[1] = sha256(k0x + k1y).digest()
+    encr[2] = sha256(k1x + k0y).digest()
+    encr[3] = sha256(k1x + k1y).digest()
+
 
     assoc = {} # set containing resutls of operation
     counter = 0
@@ -97,19 +85,22 @@ def binary_gate(x, y, gid, gtype):
     # Constructing the encryption
     c = [] # Garbled table
     for i in range(4):
-        if assoc[i] == 0:
-            c.append(byte_xor(encr[i], k0z).hex())
-        elif assoc[i] == 1:
-            c.append(byte_xor(encr[i], k1z).hex())
+        c.append(byte_xor(encr[i], k0z))
+#        if assoc[i] == 0:
+#            c.append(byte_xor(encr[i], k0z))
+#        elif assoc[i] == 1:
+#            c.append(byte_xor(encr[i], k1z))
 
+    pprint(c[0].hex())
+    pprint(c[1].hex())
+    pprint(c[2].hex())
+    pprint(c[3].hex())
     random.shuffle(c) # Permute the results
-    print(c)
 
     keys = {}
-    if   x == 1: keys['x'] = k1x
-    elif x == 0: keys['x'] = k0x
-    if   y == 1: keys['y'] = k1y
-    if   y == 0: keys['y'] = k0y
+    keys['x'] = k0x
+    keys['y'] = k1y
+    keys['z'] = k0z
 
     # Returns #
     # 1. the garbled table encrypted #
@@ -118,6 +109,7 @@ def binary_gate(x, y, gid, gtype):
 
 
 def aliki(circ):
+
     circuit        = {}
     gates          = circ['gates']
     a_input        = circ['alice']
@@ -140,18 +132,22 @@ def aliki(circ):
         garbled_tables[g_id.hex()] = garbled_table
 
 
-    bob(garbled_tables, keys)
+    ko = bob(garbled_tables, keys)
 
 def bob(table, inputs):
+    a = []
+    for gid, v in table.items():
+        for i in range(4):
+            x = inputs[gid]['x']
+            y = inputs[gid]['y']
+            z = inputs[gid]['z']
+            a.append(byte_xor(sha256(x + y).digest(), v[i]))
+            print(byte_xor(sha256(x + y).digest(), z).hex())
 
-    for t, v in table.items():
-        for val in v:
-    
-
+    return a 
 
 
 with open(sys.argv[1]) as f:
     circ = json.load(f)
 
 aliki(circ)
-
