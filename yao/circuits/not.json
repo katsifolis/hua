@@ -1,8 +1,0 @@
-{ 
-	"name": "NOT",
-	"alice": [1],
-	"out":   [2],
-	"gates": [ 
-	  { "id":2, "type":"NOT", "in": [0] } 
-	]
-}

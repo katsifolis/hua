@@ -1,8 +1,0 @@
-{ 
-    "name": "AND",
-    "alice": [0, 1],
-    "out":   [1],
-    "gates": [ 
-      { "id":1,  "type":"AND", "in": [0, 1] }
-    ]
-}

@@ -1,8 +1,0 @@
-{ 
-	"name": "XOR",
-	"alice": [1, 1],
-	"out":   [3],
-	"gates": [ 
-	  { "id":3, "type":"XOR", "in": [18, 2] } 
-	]
-}

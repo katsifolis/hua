@@ -14,43 +14,45 @@ bool_op = {
     "XOR" : lambda x, y: x ^ y,
 }
 
+assoc = {} # Dictionary of labels and their corresponding value
+keys  = [] # Array of Alice's keys
+
+
 def byte_xor(ba1, ba2):
     return bytes([_a ^ _b for _a, _b in zip(ba1, ba2)])
 
 def unary_gate(x, gid):
 
-    # Color bits two for NOT gate because we have only one input
-    pbitx = random.randint(0,1)
-    pbitz = random.randint(0,1)
-
     # Constructing the labels
-    k0x = str(random.getrandbits(128)).encode('utf-8')[:32] + str(pbitx).encode('utf-8') 
-    k1x = str(random.getrandbits(128)).encode('utf-8')[:32] + str(int(not(pbitx))).encode('utf-8')
-    k0z = str(random.getrandbits(128)).encode('utf-8')[:32] + str(pbitz).encode('utf-8')
-    k1z = str(random.getrandbits(128)).encode('utf-8')[:32] + str(int(not(pbitz))).encode('utf-8')
+    k0x = bytes(os.urandom(32))
+    k1x = bytes(os.urandom(32))
+    k0z = bytes(os.urandom(32))
+    k1z = bytes(os.urandom(32))
 
     encr    = {}
     encr[0] = sha256(k0x + gid).digest() 
     encr[1] = sha256(k1x + gid).digest()
 
-    assoc = {} # set containing resutls of operation
+    assoc   = {} # set containing resutls of operation
+    c       = [] # Garbled table
     counter = 0
+    tmp     = 0
     for i in range(0,2):
-            counter += 1
-
-    # Constructing the encryption
-    c = [] # Garbled table
-    for i in range(2):
-        if assoc[i] == 0:
-            c.append(byte_xor(encr[i], k0z).hex())
-        elif assoc[i] == 1:
-            c.append(byte_xor(encr[i], k1z).hex())
+        res = not(int(x))
+        if   res == 1:
+            assoc[i] = 1
+            tmp = k1x
+        elif res == 0:
+            assoc[i] = 0
+            tmp = k0x
+        
+        c.append(byte_xor(encr[i], tmp)) 
 
     random.shuffle(c) # Permute the results
+    print(assoc)
 
     keys = {}
-    if   x == 1: keys['x'] = k1x
-    elif x == 0: keys['x'] = k0x
+    keys['x'] = k1x
 
     # Returns #
     # 1. the garbled table encrypted #
@@ -59,95 +61,131 @@ def unary_gate(x, gid):
 
 def binary_gate(x, y, gid, gtype):
 
-    # Constructing the labels
-    k0x  = bytes(os.urandom(32))
-    k1x  = bytes(os.urandom(32))
-    k0y  = bytes(os.urandom(32))
-    k1y  = bytes(os.urandom(32))
-    k0z  = bytes(os.urandom(32))
-    k1z  = bytes(os.urandom(32))
+    global assoc
+    global keys
 
+    # Constructing the labels
+    k0x  = bytes(os.urandom(32)); assoc[k0x] = 0
+    k1x  = bytes(os.urandom(32)); assoc[k1x] = 1
+    k0y  = bytes(os.urandom(32)); assoc[k0y] = 0
+    k1y  = bytes(os.urandom(32)); assoc[k1y] = 1
+    k0z  = bytes(os.urandom(32)); k1z  = bytes(os.urandom(32))
+
+    # Hash-Digests of inputs
     encr    = {}
     encr[0] = sha256(k0x + k0y).digest() 
     encr[1] = sha256(k0x + k1y).digest()
     encr[2] = sha256(k1x + k0y).digest()
     encr[3] = sha256(k1x + k1y).digest()
 
-
-    assoc = {} # set containing resutls of operation
-    counter = 0
-    for i in range(0,2):
-        for j in range(0,2):
-            op = bool_op[gtype](i, j)
-            assoc[counter] = op
-            counter += 1
-    
-    # Constructing the encryption
     c = [] # Garbled table
-    for i in range(4):
-        c.append(byte_xor(encr[i], k0z))
-#        if assoc[i] == 0:
-#            c.append(byte_xor(encr[i], k0z))
-#        elif assoc[i] == 1:
-#            c.append(byte_xor(encr[i], k1z))
 
-    pprint(c[0].hex())
-    pprint(c[1].hex())
-    pprint(c[2].hex())
-    pprint(c[3].hex())
+    # Connect the labels with the actual values
+    assoc[k0z] = (0)
+    assoc[k1z] = (1)
+
+    if   gtype == 'AND':                 #  AND  #
+        c.append(byte_xor(k0z, encr[0])) # 0 0 0 # 
+        c.append(byte_xor(k0z, encr[1])) # 0 1 0 #
+        c.append(byte_xor(k0z, encr[2])) # 1 0 0 #
+        c.append(byte_xor(k1z, encr[3])) # 1 1 1 #
+
+    elif gtype == 'OR':                  #   OR  #
+        c.append(byte_xor(k0z, encr[0])) # 0 0 0 # 
+        c.append(byte_xor(k1z, encr[1])) # 0 1 1 #
+        c.append(byte_xor(k1z, encr[2])) # 1 0 1 #
+        c.append(byte_xor(k1z, encr[3])) # 1 1 1 #
+
+    elif gtype == 'XOR':                 #  XOR  #
+        c.append(byte_xor(k0z, encr[0])) # 0 0 0 #  
+        c.append(byte_xor(k1z, encr[1])) # 0 1 1 #
+        c.append(byte_xor(k1z, encr[2])) # 1 0 1 #
+        c.append(byte_xor(k0z, encr[3])) # 1 1 0 #
+
     random.shuffle(c) # Permute the results
 
-    keys = {}
-    keys['x'] = k0x
-    keys['y'] = k1y
-    keys['z'] = k0z
+
+    # Alice's input
+    if   x == 1: keys.append(k1x) 
+    elif x == 0: keys.append(k0x)
+    if   y == 1: keys.append(k1y) 
+    elif y == 0: keys.append(k0y)
 
     # Returns #
     # 1. the garbled table encrypted #
     # 2. the input values encrypted  #
     return c, keys 
 
-
-def aliki(circ):
-
-    circuit        = {}
-    gates          = circ['gates']
-    a_input        = circ['alice']
-    garbled_tables = {}
-    keys           = {}
-
-    for g in gates:
-        circuit = []
-        g_input = g['in']
-        g_id    = g['id'].to_bytes(1, byteorder='big')
-        g_type  = g['type']
-        if len(g_input) < 2:
-            x                               = g_input[0]
-            garbled_table, keys[g_id.hex()] = unary_gate(x, g_id)
-        else:
-            x             = g_input[0]
-            y             = g_input[1]
-            garbled_table, keys[g_id.hex()] = binary_gate(x, y, g_id, g_type)
-
-        garbled_tables[g_id.hex()] = garbled_table
+def full_adder(a, b):
+    a = \
+        """
+        #  TRUTH TABLE  #
+        # X Y Ci | Co S #
+        # 0 0 0  | 0  0 #
+        # 0 1 1  | 1  0 #
+        # 1 0 0  | 0  1 #
+        # 1 0 1  | 1  0 #
+        # 1 1 0  | 1  0 #
+        # 1 1 1  | 1  1 #
+        # # # # # # # # # 
+        """
+    print(a)
 
 
-    ko = bob(garbled_tables, keys)
+
+
+
+
+
+def aliki():
+
+    global assoc
+    key_table = {}
+    garbled_tables = {}             # Permuted garbled tables to be sent to bob
+
+    x      = 0
+    y      = 1
+    g_id   = 1
+    g_type = 'AND'
+
+    garbled_table, key_table[g_id] = binary_gate(x, y, g_id, g_type)
+    garbled_tables[g_id] = garbled_table
+
+    x      = 0
+    y      = 1
+    g_id   = 2
+    g_type = 'XOR'
+    garbled_table, key_table[g_id] = binary_gate(x, y, g_id, g_type)
+
+
+    garbled_tables[g_id] = garbled_table
+
+
+    res = bob(garbled_tables, key_table)
+    # Finding the key
+    for gid, v in res.items():
+        for value in v:
+            try:
+                pprint("gid: " + str(gid) + " - " + str(assoc[value]))
+                break
+            except:
+                print('err')
 
 def bob(table, inputs):
-    a = []
+    cipher_dict = {}
+    ciphers     = []
+    
     for gid, v in table.items():
+        x = inputs[gid].pop(0)
+        y = inputs[gid].pop(0)
         for i in range(4):
-            x = inputs[gid]['x']
-            y = inputs[gid]['y']
-            z = inputs[gid]['z']
-            a.append(byte_xor(sha256(x + y).digest(), v[i]))
-            print(byte_xor(sha256(x + y).digest(), z).hex())
+            ciphers.append(byte_xor(sha256(x + y).digest(), v[i]))
 
-    return a 
+        cipher_dict[gid] = ciphers
+        ciphers = [] # 
+
+    return cipher_dict
 
 
-with open(sys.argv[1]) as f:
-    circ = json.load(f)
-
-aliki(circ)
+aliki()
+full_adder()
