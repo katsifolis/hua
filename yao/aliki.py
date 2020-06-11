@@ -18,6 +18,17 @@ assoc = {} # Dictionary of labels and their corresponding value
 keys  = [] # Array of Alice's keys
 
 
+def ret_val(res):
+    for gid, v in res.items():
+        for value in v:
+            try:
+               # pprint("gid: " + str(gid) + " - " + str(assoc[value]))
+                return assoc[value]
+            except:
+               # print('err')
+               pass
+
+
 def byte_xor(ba1, ba2):
     return bytes([_a ^ _b for _a, _b in zip(ba1, ba2)])
 
@@ -116,7 +127,18 @@ def binary_gate(x, y, gid, gtype):
     # 2. the input values encrypted  #
     return c, keys 
 
-def full_adder(a, b):
+def full_adder():
+    """
+
+     Full adder Implementation
+     2 XOR Gates
+     2 AND Gates
+     1 OR  Gate
+     Input:  A, B, Cin
+     Output: S, Cout
+
+
+    """
     a = \
         """
         #  TRUTH TABLE  #
@@ -129,11 +151,79 @@ def full_adder(a, b):
         # 1 1 1  | 1  1 #
         # # # # # # # # # 
         """
-    print(a)
+    get_bin = lambda x: format(x, 'b')
+
+    # Inputs
+    x = 0   
+    y = 1  
+    cin = 0
+
+    seq = ['XOR', 'XOR', 'AND', 'AND', 'OR']
+    r_values = [0,1,2]
+
+    
+    global assoc
+    garbled_tables = {}
+    key_table      = {}
+
+    # 1st XOR
+    garbled_table, key_table[0] = binary_gate(x, y, 0, seq[0])
+    garbled_tables[0] = garbled_table
+    res = bob(garbled_tables, key_table)
+    r_values[0] = ret_val(res)
+    del(garbled_tables[0])
 
 
+    # 2nd XOR
+    garbled_table, key_table[1] = binary_gate(r_values[0], cin, 1, seq[1])
+    garbled_tables[1] = garbled_table
+    res = bob(garbled_tables, key_table)
+    r_values[0] = ret_val(res)
+    print(r_values[0])
+    del(garbled_tables[1])
+
+    # 1st AND
+    garbled_table, key_table[2] = binary_gate(r_values[0], cin, 2, seq[2])
+    garbled_tables[2] = garbled_table
+    res = bob(garbled_tables, key_table)
+    val = ret_val(res)
+    del(garbled_tables[2])
+
+    # 2nd AND
+    garbled_table, key_table[3] = binary_gate(x, y, 3, seq[3])
+    garbled_tables[3] = garbled_table
+    res = bob(garbled_tables, key_table)
+    r_values[1] = ret_val(res)
+    del(garbled_tables[3])
+
+    # OR
+    garbled_table, key_table[4] = binary_gate(r_values[0], r_values[1], 4, seq[4])
+    garbled_tables[4] = garbled_table
+    res = bob(garbled_tables, key_table)
+    r_values[2] = ret_val(res)
+    print(r_values[2])
+    del(garbled_tables[4])
+    
 
 
+    # Finding the key
+    
+    #garbled_tables, key_table = {}, {}
+
+    #for i in range(2, 5):
+    #    garbled_table, key_table[i] = binary_gate(x, y, i, seq[i])
+
+    #    garbled_tables[i] = garbled_table
+
+    #res = bob(garbled_tables, key_table)
+    ## Finding the key
+    #for gid, v in res.items():
+    #    for value in v:
+    #        try:
+    #            pprint("gid: " + str(gid) + " - " + str(assoc[value]))
+    #            break
+    #        except:
+    #            print('err')
 
 
 
@@ -150,16 +240,6 @@ def aliki():
 
     garbled_table, key_table[g_id] = binary_gate(x, y, g_id, g_type)
     garbled_tables[g_id] = garbled_table
-
-    x      = 0
-    y      = 1
-    g_id   = 2
-    g_type = 'XOR'
-    garbled_table, key_table[g_id] = binary_gate(x, y, g_id, g_type)
-
-
-    garbled_tables[g_id] = garbled_table
-
 
     res = bob(garbled_tables, key_table)
     # Finding the key
@@ -187,5 +267,4 @@ def bob(table, inputs):
     return cipher_dict
 
 
-aliki()
 full_adder()
