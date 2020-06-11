@@ -6,23 +6,17 @@ from pprint              import pprint
 from hashlib             import sha256
 from operator            import xor
 
-# Implement BOB #
-
-bool_op = {
-    "AND" : lambda x, y: x & y,
-    "OR"  : lambda x, y: x | y,
-    "XOR" : lambda x, y: x ^ y,
-}
-
 assoc = {} # Dictionary of labels and their corresponding value
 keys  = [] # Array of Alice's keys
 
-
-
+# Helper Function to xor between byte_arrays
 def byte_xor(ba1, ba2):
     return bytes([_a ^ _b for _a, _b in zip(ba1, ba2)])
 
 def unary_gate(x, gid):
+
+    global assoc
+    global keys
 
     # Constructing the labels
     k0x = bytes(os.urandom(32))
@@ -30,30 +24,23 @@ def unary_gate(x, gid):
     k0z = bytes(os.urandom(32))
     k1z = bytes(os.urandom(32))
 
-    encr    = {}
-    encr[0] = sha256(k0x + gid).digest() 
-    encr[1] = sha256(k1x + gid).digest()
+    # association so alice can know the output's value
+    assoc[k0z] = (0)
+    assoc[k1z] = (1)
 
-    assoc   = {} # set containing resutls of operation
+    encr    = {}
+    encr[0] = sha256(k0x + bytes(gid)).digest() 
+    encr[1] = sha256(k1x + bytes(gid)).digest()
+
     c       = [] # Garbled table
-    counter = 0
-    tmp     = 0
-    for i in range(0,2):
-        res = not(int(x))
-        if   res == 1:
-            assoc[i] = 1
-            tmp = k1x
-        elif res == 0:
-            assoc[i] = 0
-            tmp = k0x
-        
-        c.append(byte_xor(encr[i], tmp)) 
+    c.append(byte_xor(k1z, encr[0]))
+    c.append(byte_xor(k0z, encr[1]))
+
 
     random.shuffle(c) # Permute the results
-    print(assoc)
 
-    keys = {}
-    keys['x'] = k1x
+    if   x == 1: keys.append(k1x) 
+    elif x == 0: keys.append(k0x) 
 
     # Returns #
     # 1. the garbled table encrypted #
@@ -66,18 +53,18 @@ def binary_gate(x, y, gid, gtype):
     global keys
 
     # Constructing the labels
-    k0x  = bytes(os.urandom(32)); assoc[k0x] = 0
-    k1x  = bytes(os.urandom(32)); assoc[k1x] = 1
-    k0y  = bytes(os.urandom(32)); assoc[k0y] = 0
-    k1y  = bytes(os.urandom(32)); assoc[k1y] = 1
+    k0x  = bytes(os.urandom(32)); 
+    k1x  = bytes(os.urandom(32)); 
+    k0y  = bytes(os.urandom(32)); 
+    k1y  = bytes(os.urandom(32)); 
     k0z  = bytes(os.urandom(32)); k1z  = bytes(os.urandom(32))
 
     # Hash-Digests of inputs
     encr    = {}
-    encr[0] = sha256(k0x + k0y).digest() 
-    encr[1] = sha256(k0x + k1y).digest()
-    encr[2] = sha256(k1x + k0y).digest()
-    encr[3] = sha256(k1x + k1y).digest()
+    encr[0] = sha256(k0x + k0y + bytes(gid)).digest() 
+    encr[1] = sha256(k0x + k1y + bytes(gid)).digest()
+    encr[2] = sha256(k1x + k0y + bytes(gid)).digest()
+    encr[3] = sha256(k1x + k1y + bytes(gid)).digest()
 
     c = [] # Garbled table
 
@@ -212,10 +199,10 @@ def aliki():
     b   = "10110"  
     Cin = 0      # First iteration Cin = 0
 
-    # Array of 1-bit full adder output
+    # Array of (len(a) + 1) size 1-bit full adder output
     res      = ['0'] * (len(a) + 1)
 
-    for i in range(len(a)-1, -1, -1):
+    for i in range(len(a)-1, -1, -1): # Addition starts backwards
         x, y = int(a[i], 2), int(b[i], 2)
         print(x)
         print(y)
@@ -227,12 +214,14 @@ def aliki():
             res[i] = str(Cout)
             break
 
+    # Converting the string array to an integer
     sum = 0 
     res.reverse()
     for i, v in enumerate(res):
         sum += pow(2, i) * int(v)
 
     print(sum)
+
 
 def bob(table, inputs):
     cipher_dict = {}
@@ -241,8 +230,8 @@ def bob(table, inputs):
     for gid, v in table.items():
         x = inputs[gid].pop(0)
         y = inputs[gid].pop(0)
-        for i in range(4):
-            ciphers.append(byte_xor(sha256(x + y).digest(), v[i]))
+        for i in range(4): # Producing the 4 ciphers and sending back to Alice
+            ciphers.append(byte_xor(sha256(x + y + bytes(gid)).digest(), v[i]))
 
         cipher_dict[gid] = ciphers
         ciphers = [] # 
