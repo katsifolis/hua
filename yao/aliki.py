@@ -1,10 +1,9 @@
+# Yao-GC implementation #
+
+from hashlib import sha256
 import random
 import json
-import sys
 import os
-from pprint              import pprint
-from hashlib             import sha256
-from operator            import xor
 
 assoc = {} # Dictionary of labels and their corresponding value
 keys  = [] # Array of Alice's keys
@@ -28,17 +27,19 @@ def unary_gate(x, gid):
     assoc[k0z] = (0)
     assoc[k1z] = (1)
 
+    # Hashes of the sha digest
     encr    = {}
     encr[0] = sha256(k0x + bytes(gid)).digest() 
     encr[1] = sha256(k1x + bytes(gid)).digest()
 
+
+    # Appending the values and xor-ing the result
     c       = [] # Garbled table
     c.append(byte_xor(k1z, encr[0]))
     c.append(byte_xor(k0z, encr[1]))
-
-
     random.shuffle(c) # Permute the results
 
+    # Alice's input to be sent to bob
     if   x == 1: keys.append(k1x) 
     elif x == 0: keys.append(k0x) 
 
@@ -72,6 +73,7 @@ def binary_gate(x, y, gid, gtype):
     assoc[k0z] = (0)
     assoc[k1z] = (1)
 
+    # Deciding what type of binary gate this is for each iteration
     if   gtype == 'AND':                 #  AND  #
         c.append(byte_xor(k0z, encr[0])) # 0 0 0 # 
         c.append(byte_xor(k0z, encr[1])) # 0 1 0 #
@@ -93,7 +95,7 @@ def binary_gate(x, y, gid, gtype):
     random.shuffle(c) # Permute the results
 
 
-    # Alice's input
+    # Alice's input to be sent to bob
     if   x == 1: keys.append(k1x) 
     elif x == 0: keys.append(k0x)
     if   y == 1: keys.append(k1y) 
@@ -114,7 +116,6 @@ def full_adder(x, y, cin = 0):
      Input:  A, B, Cin
      Output: S, Cout
 
-
     """
     a = \
         """
@@ -131,7 +132,9 @@ def full_adder(x, y, cin = 0):
 
     # Inputs
 
+    # Hard-coded sequence of gates
     seq = ['XOR', 'XOR', 'AND', 'AND', 'OR']
+    # Array of gates' results
     r_values = [-1, -1, -1, -1, -1]
 
     
@@ -224,6 +227,12 @@ def aliki():
 
 
 def bob(table, inputs):
+    """
+
+      ciphers     : temporary array for storing the decryption
+      cipher_dict : dictionary associating the gate's id with the decryption ciphers
+
+    """
     cipher_dict = {}
     ciphers     = []
     
@@ -238,4 +247,5 @@ def bob(table, inputs):
 
     return cipher_dict
 
+# Call of the main script
 aliki()
