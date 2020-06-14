@@ -1,9 +1,11 @@
-# Yao-GC implementation #
+#!/usr/bin/env python3
 
+# Yao-GC implementation #
 from hashlib import sha256
 import random
 import json
 import os
+import itertools
 
 assoc = {} # Dictionary of labels and their corresponding value
 keys  = [] # Array of Alice's keys
@@ -178,8 +180,10 @@ def full_adder(x, y, cin = 0):
     r_values[3] = ret_val(res)
     del(garbled_tables[4])
 
+
     print("Cout: " + str(r_values[3]))
     print("S:    " + str(r_values[0]))
+    print()
 
     return (r_values[3], r_values[0])
     
@@ -205,11 +209,11 @@ def aliki():
     # Array of (len(a) + 1) size 1-bit full adder output
     res      = ['0'] * (len(a) + 1)
 
+    counter = lambda c=itertools.count(): next(c)
     for i in range(len(a)-1, -1, -1): # Addition starts backwards
         x, y = int(a[i], 2), int(b[i], 2)
-        print(x)
-        print(y)
 
+        print("Iteration {0}".format(counter()))
         Cout, S = full_adder(x, y, Cin)
         Cin = Cout
         res[i+1]  = str(S)
@@ -219,11 +223,12 @@ def aliki():
 
     # Converting the string array to an integer
     sum = 0 
+    print("Full Adder outputs : " + str(res))
     res.reverse()
     for i, v in enumerate(res):
         sum += pow(2, i) * int(v)
 
-    print(sum)
+    print("The sum is " + str(sum))
 
 
 def bob(table, inputs):
