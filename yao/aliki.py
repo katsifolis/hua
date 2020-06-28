@@ -209,7 +209,8 @@ def aliki():
     # Array of (len(a) + 1) size 1-bit full adder output
     res      = ['0'] * (len(a) + 1)
 
-    counter = lambda c=itertools.count(): next(c)
+    counter = lambda c=itertools.count(): next(c) # counter
+
     for i in range(len(a)-1, -1, -1): # Addition starts backwards
         x, y = int(a[i], 2), int(b[i], 2)
 
