@@ -1,7 +1,7 @@
-load ahp_f_results;
+load hoho.f;
 
 s=0.2; %perturbations +-10%;
-ntimes=10^3;
+ntimes=10^4;
 
 NPRR=zeros(ntimes,1); %initialization of the matrix of RR for each iteration
 
@@ -72,3 +72,4 @@ for iter=1:ntimes
 end %eof ntimes (MC)
 
 PRR=sum(NPRR)/ntimes;
+
